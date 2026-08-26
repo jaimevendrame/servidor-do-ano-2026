@@ -1,19 +1,29 @@
-﻿/* eslint-disable prettier/prettier */
+/* eslint-disable prettier/prettier */
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
 import { LoginEleitorDto, LoginResponseDto } from './dto/login-eleitor.dto';
 import { limparCPF } from '../importacao/validar-cpf';
+import { RateLimitService } from './rate-limit.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly jwtService: JwtService
+    private readonly jwtService: JwtService,
+    private readonly rateLimitService: RateLimitService
   ) {}
 
   async loginEleitor(dto: LoginEleitorDto, edicaoId: number): Promise<LoginResponseDto> {
     const cpfLimpo = limparCPF(dto.cpf);
+
+    // Verifica bloqueio
+    const bloqueado = await this.rateLimitService.estaBloqueado(cpfLimpo);
+    if (bloqueado) {
+      const ttl = await this.rateLimitService.tempoRestante(cpfLimpo);
+      throw new Error(`CPF bloqueado. Tente novamente em ${Math.ceil(ttl / 60)} minutos.`);
+    }
+
     const dataParse = new Date(dto.dataAdmissao);
 
     const eleitor = await this.prisma.eleitor.findFirst({
@@ -26,8 +36,16 @@ export class AuthService {
     });
 
     if (!eleitor) {
-      throw new Error('Eleitor nao encontrado ou dados invalidos');
+      // Registra falha
+      const resultado = await this.rateLimitService.registrarFalha(cpfLimpo);
+      const msg = resultado.bloqueado
+        ? 'CPF bloqueado por 15 minutos apos 3 tentativas invalidas.'
+        : `Dados invalidos. Tentativa ${resultado.tentativas} de 3.`;
+      throw new Error(msg);
     }
+
+    // Sucesso: reseta contador
+    await this.rateLimitService.resetar(cpfLimpo);
 
     const token = this.jwtService.sign(
       {
