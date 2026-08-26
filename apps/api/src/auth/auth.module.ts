@@ -5,6 +5,8 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { PrismaModule } from '../prisma/prisma.module';
 import { RateLimitService } from './rate-limit.service';
+import { AdminService } from './admin.service';
+import { AdminController } from './admin.controller';
 
 @Module({
   imports: [
@@ -14,8 +16,8 @@ import { RateLimitService } from './rate-limit.service';
       signOptions: { expiresIn: '30m' },
     }),
   ],
-  providers: [AuthService, RateLimitService],
-  controllers: [AuthController],
-  exports: [AuthService, RateLimitService],
+  providers: [AuthService, RateLimitService, AdminService],
+  controllers: [AuthController, AdminController],
+  exports: [AuthService, RateLimitService, AdminService],
 })
 export class AuthModule {}

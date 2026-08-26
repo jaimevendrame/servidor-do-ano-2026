@@ -142,6 +142,21 @@ model JanelaVotacao {
 }
 
 // ──────────────────────────────────────────────
+// Admin
+// ──────────────────────────────────────────────
+model Admin {
+  id           Int      @id @default(autoincrement())
+  username     String   @unique
+  senhaHash    String
+  totpSecret   String?  // null = nao ativado
+  totpHabilitado Boolean @default(false)
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  @@map("admins")
+}
+
+// ──────────────────────────────────────────────
 // Log de auditoria
 // ──────────────────────────────────────────────
 model LogAuditoria {
