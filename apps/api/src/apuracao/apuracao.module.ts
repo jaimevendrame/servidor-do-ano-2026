@@ -4,12 +4,14 @@ import { PainelAdminService } from './painel-admin.service';
 import { PainelAdminController } from './painel-admin.controller';
 import { ApuracaoService } from './apuracao.service';
 import { ApuracaoController } from './apuracao.controller';
+import { AuditoriaService } from './auditoria.service';
+import { AuditoriaController } from './auditoria.controller';
 import { PrismaModule } from '../prisma/prisma.module';
 
 @Module({
   imports: [PrismaModule],
-  providers: [PainelAdminService, ApuracaoService],
-  controllers: [PainelAdminController, ApuracaoController],
-  exports: [PainelAdminService, ApuracaoService],
+  providers: [PainelAdminService, ApuracaoService, AuditoriaService],
+  controllers: [PainelAdminController, ApuracaoController, AuditoriaController],
+  exports: [PainelAdminService, ApuracaoService, AuditoriaService],
 })
 export class ApuracaoModule {}
