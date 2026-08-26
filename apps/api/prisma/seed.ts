@@ -1,4 +1,5 @@
-﻿import { PrismaClient } from '@prisma/client';
+﻿/* eslint-disable prettier/prettier */
+import { PrismaClient } from '@prisma/client';
 import { faker } from '@faker-js/faker/locale/pt_BR';
 
 const prisma = new PrismaClient();
