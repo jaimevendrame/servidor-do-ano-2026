@@ -6,12 +6,14 @@ import { VotoService } from './voto.service';
 import { VotoController } from './voto.controller';
 import { ComprovanteService } from './comprovante.service';
 import { ComprovanteController } from './comprovante.controller';
+import { ReentradaService } from './reentrada.service';
+import { ReentradaController } from './reentrada.controller';
 import { PrismaModule } from '../prisma/prisma.module';
 
 @Module({
   imports: [PrismaModule],
-  providers: [CedulaService, VotoService, ComprovanteService],
-  controllers: [CedulaController, VotoController, ComprovanteController],
-  exports: [CedulaService, VotoService, ComprovanteService],
+  providers: [CedulaService, VotoService, ComprovanteService, ReentradaService],
+  controllers: [CedulaController, VotoController, ComprovanteController, ReentradaController],
+  exports: [CedulaService, VotoService, ComprovanteService, ReentradaService],
 })
 export class VotacaoModule {}
