@@ -1,4 +1,4 @@
-import * as XLSX from 'xlsx';
+﻿import * as XLSX from 'xlsx';
 import { parsearXls } from './parsear-xls';
 
 function criarXlsBuffer(dados: Record<string, unknown>[]): Buffer {

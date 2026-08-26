@@ -1,14 +1,13 @@
-/* eslint-disable prettier/prettier */
-import * as XLSX from 'xlsx';
+﻿import * as XLSX from 'xlsx';
 import { LinhaXlsRaw, ResultadoParsing } from './dto/linha-xls.dto';
 
 const MAPA_COLUNAS: Record<string, string[]> = {
   nome: ['nome', 'nome completo', 'servidor', 'nome do servidor'],
   cpf: ['cpf'],
   dataNascimento: ['data de nascimento', 'data nascimento', 'dt nascimento', 'nascimento'],
-  dataAdmissao: ['data de admissão', 'data de admissao', 'data admissão', 'data admissao', 'dt admissão', 'dt admissao', 'admissão', 'admissao'],
-  cargo: ['cargo', 'função', 'funcao'],
-  setor: ['setor', 'lotação', 'lotacao', 'setor/lotação', 'setor/lotacao', 'unidade'],
+  dataAdmissao: ['data de admissao', 'data admissao', 'dt admissao', 'admissao'],
+  cargo: ['cargo', 'funcao'],
+  setor: ['setor', 'lotacao', 'setor/lotacao', 'unidade'],
 };
 
 const COLUNAS_OBRIGATORIAS = ['nome', 'cpf', 'dataAdmissao', 'setor'];
@@ -17,7 +16,7 @@ function normalizarTexto(texto: string): string {
   return texto
     .toLowerCase()
     .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
+    .replace(/[\u0300-\u036f]/g, '')
     .trim();
 }
 
