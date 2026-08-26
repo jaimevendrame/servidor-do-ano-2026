@@ -1,4 +1,5 @@
-﻿import * as XLSX from 'xlsx';
+﻿/* eslint-disable prettier/prettier */
+import * as XLSX from 'xlsx';
 import { LinhaXlsRaw, ResultadoParsing } from './dto/linha-xls.dto';
 
 const MAPA_COLUNAS: Record<string, string[]> = {
