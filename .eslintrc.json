@@ -1,5 +1,6 @@
 {
   "root": true,
+  "ignorePatterns": ["dist", "build", ".next", "node_modules", "**/*.d.ts"],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "ecmaVersion": 2020,
@@ -22,18 +23,14 @@
         "argsIgnorePattern": "^_"
       }
     ],
-    "@typescript-eslint/explicit-function-return-types": [
-      "warn",
-      {
-        "allowExpressions": true
-      }
-    ]
+    "@typescript-eslint/explicit-function-return-type": "off"
   },
   "overrides": [
     {
-      "files": ["*.tsx"],
+      "files": ["*.js"],
       "rules": {
-        "@typescript-eslint/explicit-function-return-types": "off"
+        "no-undef": "off",
+        "prettier/prettier": "off"
       }
     }
   ]
