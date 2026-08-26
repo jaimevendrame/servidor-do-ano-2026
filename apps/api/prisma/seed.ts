@@ -1,9 +1,9 @@
-import { PrismaClient } from '@prisma/client';
+﻿import { PrismaClient } from '@prisma/client';
 import { faker } from '@faker-js/faker/locale/pt_BR';
 
 const prisma = new PrismaClient();
 
-// Gera CPF válido sintético (formato: XXX.XXX.XXX-XX)
+// Gera CPF vÃ¡lido sintÃ©tico (formato: XXX.XXX.XXX-XX)
 function gerarCPF(): string {
   const parte1 = String(Math.floor(Math.random() * 1000)).padStart(3, '0');
   const parte2 = String(Math.floor(Math.random() * 1000)).padStart(3, '0');
@@ -24,7 +24,7 @@ async function seed(): Promise<void> {
   await prisma.logAuditoria.deleteMany({});
   await prisma.edicao.deleteMany({});
 
-  console.log('Criando edição 2026...');
+  console.log('Criando ediÃ§Ã£o 2026...');
   const edicao = await prisma.edicao.create({
     data: {
       ano: 2026,
@@ -45,7 +45,7 @@ async function seed(): Promise<void> {
     prisma.setor.create({
       data: {
         edicaoId: edicao.id,
-        nomeOficial: 'Tecnologia da Informação',
+        nomeOficial: 'Tecnologia da InformaÃ§Ã£o',
         nomeExibido: 'TI',
         agrupado: false,
       },
@@ -60,7 +60,7 @@ async function seed(): Promise<void> {
     }),
   ]);
 
-  console.log('Gerando 30 eleitores com CPFs sintéticos...');
+  console.log('Gerando 30 eleitores com CPFs sintÃ©ticos...');
   const eleitores = [];
   for (let i = 0; i < 30; i++) {
     const setor = setores[i % 3];
@@ -96,7 +96,7 @@ async function seed(): Promise<void> {
     }
   }
 
-  console.log('Criando janela de votação...');
+  console.log('Criando janela de votaÃ§Ã£o...');
   await prisma.janelaVotacao.create({
     data: {
       edicaoId: edicao.id,
@@ -108,12 +108,12 @@ async function seed(): Promise<void> {
     },
   });
 
-  console.log('Seed concluído ✓');
-  console.log(`- 1 edição (2026)`);
+  console.log('Seed concluÃ­do âœ“');
+  console.log(`- 1 ediÃ§Ã£o (2026)`);
   console.log(`- 3 setores`);
   console.log(`- 30 eleitores`);
   console.log(`- 15 candidatos (5 por setor)`);
-  console.log(`- 1 janela de votação`);
+  console.log(`- 1 janela de votaÃ§Ã£o`);
   console.log(`\nNenhum dado real de servidor. CPFs e dados de candidatos gerados.`);
 }
 
