@@ -1,0 +1,158 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ──────────────────────────────────────────────
+// Edição (ex: 2026)
+// ──────────────────────────────────────────────
+model Edicao {
+  id       Int      @id @default(autoincrement())
+  ano      Int      @unique
+  ativo    Boolean  @default(true)
+  criadoEm DateTime @default(now())
+
+  setores       Setor[]
+  eleitores     Eleitor[]
+  candidatos    Candidato[]
+  participacoes Participacao[]
+  votos         Voto[]
+  janela        JanelaVotacao?
+
+  @@map("edicoes")
+}
+
+// ──────────────────────────────────────────────
+// Setor
+// ──────────────────────────────────────────────
+model Setor {
+  id          Int      @id @default(autoincrement())
+  edicaoId    Int
+  nomeOficial String
+  nomeExibido String
+  agrupado    Boolean  @default(false)
+  criadoEm    DateTime @default(now())
+
+  edicao     Edicao      @relation(fields: [edicaoId], references: [id])
+  eleitores  Eleitor[]
+  candidatos Candidato[]
+  votos      Voto[]
+
+  @@unique([edicaoId, nomeOficial])
+  @@map("setores")
+}
+
+// ──────────────────────────────────────────────
+// Eleitor
+// ──────────────────────────────────────────────
+model Eleitor {
+  id           Int      @id @default(autoincrement())
+  edicaoId     Int
+  setorId      Int
+  cpf          String
+  nome         String
+  dataAdmissao DateTime @db.Date
+  cargo        String?
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  edicao        Edicao         @relation(fields: [edicaoId], references: [id])
+  setor         Setor          @relation(fields: [setorId], references: [id])
+  participacoes Participacao[]
+
+  @@unique([edicaoId, cpf])
+  @@map("eleitores")
+}
+
+// ──────────────────────────────────────────────
+// Candidato
+// ──────────────────────────────────────────────
+model Candidato {
+  id            Int      @id @default(autoincrement())
+  edicaoId      Int
+  setorId       Int
+  eleitorId     Int?
+  nome          String
+  cargo         String?
+  ordemExibicao Int      @default(0)
+  criadoEm      DateTime @default(now())
+
+  edicao Edicao @relation(fields: [edicaoId], references: [id])
+  setor  Setor  @relation(fields: [setorId], references: [id])
+  votos  Voto[]
+
+  @@unique([edicaoId, eleitorId])
+  @@map("candidatos")
+}
+
+// ──────────────────────────────────────────────
+// Participação (quem votou — SEM vínculo com Voto)
+// ──────────────────────────────────────────────
+model Participacao {
+  id           Int      @id @default(autoincrement())
+  eleitorId    Int
+  edicaoId     Int
+  registradoEm DateTime // arredondado para janela de 5 min
+
+  eleitor Eleitor @relation(fields: [eleitorId], references: [id])
+  edicao  Edicao  @relation(fields: [edicaoId], references: [id])
+
+  @@unique([eleitorId, edicaoId])
+  @@map("participacoes")
+}
+
+// ──────────────────────────────────────────────
+// Voto (em quem votaram — SEM vínculo com Participação)
+// ──────────────────────────────────────────────
+model Voto {
+  id           Int      @id @default(autoincrement())
+  candidatoId  Int
+  setorId      Int
+  edicaoId     Int
+  registradoEm DateTime // arredondado para janela de 5 min
+
+  candidato Candidato @relation(fields: [candidatoId], references: [id])
+  setor     Setor     @relation(fields: [setorId], references: [id])
+  edicao    Edicao    @relation(fields: [edicaoId], references: [id])
+
+  @@map("votos")
+}
+
+// ──────────────────────────────────────────────
+// Janela de votação
+// ──────────────────────────────────────────────
+model JanelaVotacao {
+  id            Int      @id @default(autoincrement())
+  edicaoId      Int      @unique
+  dataInicio    DateTime
+  dataFim       DateTime
+  timezone      String   @default("America/Sao_Paulo")
+  abertaManual  Boolean  @default(false)
+  fechadaManual Boolean  @default(false)
+  criadoEm      DateTime @default(now())
+  atualizadoEm  DateTime @updatedAt
+
+  edicao Edicao @relation(fields: [edicaoId], references: [id])
+
+  @@map("janelas_votacao")
+}
+
+// ──────────────────────────────────────────────
+// Log de auditoria
+// ──────────────────────────────────────────────
+model LogAuditoria {
+  id        Int      @id @default(autoincrement())
+  ator      String
+  acao      String
+  payload   Json?
+  timestamp DateTime @default(now())
+
+  @@index([ator])
+  @@index([acao])
+  @@index([timestamp])
+  @@map("logs_auditoria")
+}
