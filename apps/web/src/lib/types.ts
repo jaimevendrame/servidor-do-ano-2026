@@ -41,13 +41,12 @@ export interface JanelaStatus {
 export interface Candidato {
   id: number;
   nome: string;
-  setorId: number;
-  setorNome: string;
+  cargo?: string | null;
+  ordem: number; // ordemExibicao
 }
 
 export interface Cedula {
-  eleitorId: number;
-  setor: string;
+  votavel: boolean;
+  motivo?: 'SETOR_SEM_CANDIDATOS' | 'SETOR_COM_UM_CANDIDATO';
   candidatos: Candidato[];
-  janela: JanelaStatus;
 }
