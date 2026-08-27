@@ -77,3 +77,69 @@ export interface TotpSetupResponse {
   secret: string;
   qrCode: string;
 }
+
+// === Importacao XLS ===
+
+export interface LinhaXlsRaw {
+  nome?: string;
+  cpf?: string;
+  dataNascimento?: string;
+  dataAdmissao?: string;
+  cargo?: string;
+  setor?: string;
+  linhaOriginal: number;
+}
+
+export interface LinhaValidada {
+  nome: string;
+  cpf: string;
+  dataNascimento?: string;
+  dataAdmissao: string;
+  cargo?: string;
+  setor: string;
+  linhaOriginal: number;
+}
+
+export interface ErroLinha {
+  linha: number;
+  campo: string;
+  motivo: string;
+}
+
+export interface ResultadoValidacao {
+  validas: LinhaValidada[];
+  erros: ErroLinha[];
+  duplicados: { cpf: string; linhaRemovida: number; linhaPreservada: number }[];
+}
+
+export interface SetorDistinto {
+  nomeOriginal: string;
+  totalServidores: number;
+}
+
+export interface RegraNormalizacao {
+  dePara: Record<string, string>;
+  guardaChuva: string[];
+  limiteMinimo: number;
+  nomeGuardaChuva: string;
+}
+
+export interface SetorNormalizado {
+  nomeOficial: string;
+  nomeExibido: string;
+  agrupado: boolean;
+  totalServidores: number;
+  origens: string[];
+}
+
+export interface PreviewNormalizacao {
+  setores: SetorNormalizado[];
+  totalEleitores: number;
+}
+
+export interface ResultadoGravacao {
+  setoresCriados: number;
+  eleitoresNovos: number;
+  eleitoresAtualizados: number;
+  totalProcessados: number;
+}
