@@ -1,17 +1,50 @@
-﻿/* eslint-disable prettier/prettier */
+/* eslint-disable prettier/prettier */
 import { PrismaClient } from '@prisma/client';
 import { faker } from '@faker-js/faker/locale/pt_BR';
+import * as bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
-// Gera CPF vÃ¡lido sintÃ©tico (formato: XXX.XXX.XXX-XX)
+// ID fixo da edicao — o frontend e o AuthController assumem edicaoId=1.
+const EDICAO_ID = 1;
+
+/**
+ * Gera um CPF valido sintetico, ja limpo (11 digitos, sem mascara).
+ *
+ * IMPORTANTE:
+ * - Digitos verificadores calculados corretamente (o front valida antes de enviar,
+ *   e o backend so encontra o eleitor se o CPF bater).
+ * - Retornado LIMPO porque o AuthService faz limparCPF(input) na busca; se o banco
+ *   tivesse mascara, o login nunca casaria.
+ */
 function gerarCPF(): string {
-  const parte1 = String(Math.floor(Math.random() * 1000)).padStart(3, '0');
-  const parte2 = String(Math.floor(Math.random() * 1000)).padStart(3, '0');
-  const parte3 = String(Math.floor(Math.random() * 1000)).padStart(3, '0');
-  const digito1 = Math.floor(Math.random() * 10);
-  const digito2 = Math.floor(Math.random() * 10);
-  return `${parte1}.${parte2}.${parte3}-${digito1}${digito2}`;
+  const n = Array.from({ length: 9 }, () => Math.floor(Math.random() * 10));
+
+  // Primeiro digito verificador
+  let soma = 0;
+  for (let i = 0; i < 9; i++) soma += n[i] * (10 - i);
+  let d1 = (soma * 10) % 11;
+  if (d1 === 10) d1 = 0;
+
+  // Segundo digito verificador
+  soma = 0;
+  const comD1 = [...n, d1];
+  for (let i = 0; i < 10; i++) soma += comD1[i] * (11 - i);
+  let d2 = (soma * 10) % 11;
+  if (d2 === 10) d2 = 0;
+
+  return [...n, d1, d2].join('');
+}
+
+/**
+ * Gera CPFs validos e distintos (evita colisao de digitos).
+ */
+function gerarCPFsUnicos(quantidade: number): string[] {
+  const set = new Set<string>();
+  while (set.size < quantidade) {
+    set.add(gerarCPF());
+  }
+  return Array.from(set);
 }
 
 async function seed(): Promise<void> {
@@ -23,11 +56,13 @@ async function seed(): Promise<void> {
   await prisma.janelaVotacao.deleteMany({});
   await prisma.setor.deleteMany({});
   await prisma.logAuditoria.deleteMany({});
+  await prisma.admin.deleteMany({});
   await prisma.edicao.deleteMany({});
 
-  console.log('Criando ediÃ§Ã£o 2026...');
+  console.log('Criando edicao 2026 (id=1)...');
   const edicao = await prisma.edicao.create({
     data: {
+      id: EDICAO_ID,
       ano: 2026,
       ativo: true,
     },
@@ -46,7 +81,7 @@ async function seed(): Promise<void> {
     prisma.setor.create({
       data: {
         edicaoId: edicao.id,
-        nomeOficial: 'Tecnologia da InformaÃ§Ã£o',
+        nomeOficial: 'Tecnologia da Informacao',
         nomeExibido: 'TI',
         agrupado: false,
       },
@@ -61,7 +96,8 @@ async function seed(): Promise<void> {
     }),
   ]);
 
-  console.log('Gerando 30 eleitores com CPFs sintÃ©ticos...');
+  console.log('Gerando 30 eleitores com CPFs validos (limpos)...');
+  const cpfs = gerarCPFsUnicos(30);
   const eleitores = [];
   for (let i = 0; i < 30; i++) {
     const setor = setores[i % 3];
@@ -69,7 +105,7 @@ async function seed(): Promise<void> {
       data: {
         edicaoId: edicao.id,
         setorId: setor.id,
-        cpf: gerarCPF(),
+        cpf: cpfs[i],
         nome: faker.person.fullName(),
         dataAdmissao: faker.date.past({ years: 10, refDate: new Date('2026-01-01') }),
         cargo: faker.person.jobTitle(),
@@ -80,16 +116,18 @@ async function seed(): Promise<void> {
 
   console.log('Criando 5 candidatos por setor...');
   for (const setor of setores) {
+    // Eleitores do setor, cada um usado no maximo uma vez como candidato
+    // (constraint unica edicaoId+eleitorId). Os que sobrarem viram candidatos
+    // "avulsos" sem vinculo a eleitor.
+    const doSetor = eleitores.filter(e => e.setorId === setor.id);
     for (let i = 0; i < 5; i++) {
-      // ~60% dos eleitores do setor viram candidatos
-      const candidatoMaybe = eleitores.find(e => e.setorId === setor.id && Math.random() < 0.6);
-
+      const eleitorVinculado = doSetor[i];
       await prisma.candidato.create({
         data: {
           edicaoId: edicao.id,
           setorId: setor.id,
-          eleitorId: candidatoMaybe?.id,
-          nome: candidatoMaybe?.nome || faker.person.fullName(),
+          eleitorId: eleitorVinculado?.id,
+          nome: eleitorVinculado?.nome || faker.person.fullName(),
           cargo: faker.person.jobTitle(),
           ordemExibicao: i,
         },
@@ -97,7 +135,7 @@ async function seed(): Promise<void> {
     }
   }
 
-  console.log('Criando janela de votaÃ§Ã£o...');
+  console.log('Criando janela de votacao...');
   await prisma.janelaVotacao.create({
     data: {
       edicaoId: edicao.id,
@@ -109,12 +147,29 @@ async function seed(): Promise<void> {
     },
   });
 
-  console.log('Seed concluÃ­do âœ“');
-  console.log(`- 1 ediÃ§Ã£o (2026)`);
+  console.log('Criando admin de desenvolvimento...');
+  const senhaHash = await bcrypt.hash('admin123', 10);
+  await prisma.admin.create({
+    data: {
+      username: 'admin',
+      senhaHash,
+      totpHabilitado: false,
+    },
+  });
+
+  // Exibe um CPF de exemplo para facilitar o login em desenvolvimento.
+  const exemplo = eleitores[0];
+  const dataExemplo = exemplo.dataAdmissao.toISOString().slice(0, 10);
+
+  console.log('Seed concluido.');
+  console.log(`- 1 edicao (2026, id=${EDICAO_ID})`);
   console.log(`- 3 setores`);
   console.log(`- 30 eleitores`);
   console.log(`- 15 candidatos (5 por setor)`);
-  console.log(`- 1 janela de votaÃ§Ã£o`);
+  console.log(`- 1 janela de votacao (fechada por padrao)`);
+  console.log(`- 1 admin (usuario: admin / senha: admin123)`);
+  console.log(`\nEleitor de exemplo para login:`);
+  console.log(`  CPF: ${exemplo.cpf} | Data de admissao: ${dataExemplo}`);
   console.log(`\nNenhum dado real de servidor. CPFs e dados de candidatos gerados.`);
 }
 

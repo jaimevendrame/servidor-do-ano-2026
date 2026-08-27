@@ -41,13 +41,194 @@ export interface JanelaStatus {
 export interface Candidato {
   id: number;
   nome: string;
-  setorId: number;
-  setorNome: string;
+  cargo?: string | null;
+  ordem: number; // ordemExibicao
 }
 
 export interface Cedula {
-  eleitorId: number;
-  setor: string;
+  votavel: boolean;
+  motivo?: 'SETOR_SEM_CANDIDATOS' | 'SETOR_COM_UM_CANDIDATO';
   candidatos: Candidato[];
-  janela: JanelaStatus;
+}
+
+export interface VotoResult {
+  sucesso: boolean;
+  jaVotou?: boolean;
+  registradoEm?: Date | string;
+}
+
+export interface StatusParticipacao {
+  jaVotou: boolean;
+  registradoEm: string | null;
+}
+
+export interface LoginAdminDto {
+  username: string;
+  senha: string;
+  totpCode?: string;
+}
+
+export interface LoginAdminResponse {
+  token: string;
+  totpRequired: boolean;
+}
+
+export interface TotpSetupResponse {
+  secret: string;
+  qrCode: string;
+}
+
+// === Importacao XLS ===
+
+export interface LinhaXlsRaw {
+  nome?: string;
+  cpf?: string;
+  dataNascimento?: string;
+  dataAdmissao?: string;
+  cargo?: string;
+  setor?: string;
+  linhaOriginal: number;
+}
+
+export interface LinhaValidada {
+  nome: string;
+  cpf: string;
+  dataNascimento?: string;
+  dataAdmissao: string;
+  cargo?: string;
+  setor: string;
+  linhaOriginal: number;
+}
+
+export interface ErroLinha {
+  linha: number;
+  campo: string;
+  motivo: string;
+}
+
+export interface ResultadoValidacao {
+  validas: LinhaValidada[];
+  erros: ErroLinha[];
+  duplicados: { cpf: string; linhaRemovida: number; linhaPreservada: number }[];
+}
+
+export interface SetorDistinto {
+  nomeOriginal: string;
+  totalServidores: number;
+}
+
+export interface RegraNormalizacao {
+  dePara: Record<string, string>;
+  guardaChuva: string[];
+  limiteMinimo: number;
+  nomeGuardaChuva: string;
+}
+
+export interface SetorNormalizado {
+  nomeOficial: string;
+  nomeExibido: string;
+  agrupado: boolean;
+  totalServidores: number;
+  origens: string[];
+}
+
+export interface PreviewNormalizacao {
+  setores: SetorNormalizado[];
+  totalEleitores: number;
+}
+
+export interface ResultadoGravacao {
+  setoresCriados: number;
+  eleitoresNovos: number;
+  eleitoresAtualizados: number;
+  totalProcessados: number;
+}
+
+// === Candidatos ===
+
+export interface CandidatoDetalhado {
+  id: number;
+  nome: string;
+  cargo?: string | null;
+  ordemExibicao: number;
+  setorId: number;
+  edicaoId: number;
+  eleitorId?: number | null;
+  setor?: { id: number; nomeOficial: string; nomeExibido: string };
+}
+
+export interface CriarCandidatoDto {
+  edicaoId: number;
+  setorId: number;
+  eleitorId?: number;
+  nome: string;
+  cargo?: string;
+  ordemExibicao?: number;
+}
+
+export interface AtualizarCandidatoDto {
+  nome?: string;
+  cargo?: string;
+  ordemExibicao?: number;
+}
+
+export interface SetorAdmin {
+  id: number;
+  edicaoId: number;
+  nomeOficial: string;
+  nomeExibido: string;
+  agrupado: boolean;
+}
+
+// === Painel admin ===
+
+export interface PainelAdmin {
+  edicaoId: number;
+  totalEleitores: number;
+  totalParticiparam: number;
+  percentual: number;
+  votacaoAberta: boolean;
+}
+
+// === Janela (shape real retornado por GET /janela/:edicaoId) ===
+
+export interface JanelaStatusApi {
+  aberta: boolean;
+  dataInicio: string;
+  dataFim: string;
+  abertaManual: boolean;
+  fechadaManual: boolean;
+}
+
+// === Apuracao ===
+
+export interface CandidatoRanking {
+  candidatoId: number;
+  nome: string;
+  cargo: string | null;
+  votos: number;
+}
+
+export interface ResultadoSetor {
+  setorId: number;
+  setorNome: string;
+  ranking: CandidatoRanking[];
+  empate: boolean;
+  empatados: CandidatoRanking[];
+}
+
+export interface ResultadoApuracao {
+  edicaoId: number;
+  votacaoFechada: boolean;
+  setores: ResultadoSetor[];
+}
+
+// === Auditoria ===
+
+export interface LogEntry {
+  id: number;
+  ator: string;
+  acao: string;
+  payload: unknown;
+  timestamp: string;
 }
