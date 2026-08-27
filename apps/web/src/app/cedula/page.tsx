@@ -78,12 +78,15 @@ export default function CedulaPage() {
   }
 
   const handleVotar = async () => {
-    if (!selectedCandidatoId) return;
+    if (!selectedCandidatoId || !cedula) return;
+
+    const candidato = cedula.candidatos.find(c => c.id === selectedCandidatoId);
+    if (!candidato) return;
 
     setVotando(true);
     try {
-      // Salvar candidatoId escolhido e redirecionar para confirmacao
-      setVotoEscolhido(selectedCandidatoId);
+      // Salvar candidato escolhido e redirecionar para confirmacao
+      setVotoEscolhido({ id: candidato.id, nome: candidato.nome });
       router.push('/confirmar-voto');
     } catch (err) {
       const apiErr = err as ApiError;
