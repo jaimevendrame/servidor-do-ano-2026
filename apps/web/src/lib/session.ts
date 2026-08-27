@@ -44,24 +44,33 @@ export function clearSession(): void {
 }
 
 const VOTO_ESCOLHIDO_KEY = 'sda:voto-escolhido';
+const VOTO_REGISTRADO_KEY = 'sda:voto-registrado';
 
-/**
- * Salva o candidatoId escolhido na cedula (antes da confirmacao).
- */
-export function setVotoEscolhido(candidatoId: number): void {
-  if (typeof window === 'undefined') return;
-  window.localStorage.setItem(VOTO_ESCOLHIDO_KEY, String(candidatoId));
+interface VotoEscolhido {
+  id: number;
+  nome: string;
 }
 
 /**
- * Recupera o candidatoId escolhido, ou null.
+ * Salva o candidato escolhido na cedula (id + nome, antes da confirmacao).
  */
-export function getVotoEscolhido(): number | null {
+export function setVotoEscolhido(candidato: VotoEscolhido): void {
+  if (typeof window === 'undefined') return;
+  window.localStorage.setItem(VOTO_ESCOLHIDO_KEY, JSON.stringify(candidato));
+}
+
+/**
+ * Recupera o candidato escolhido, ou null.
+ */
+export function getVotoEscolhido(): VotoEscolhido | null {
   if (typeof window === 'undefined') return null;
-  const val = window.localStorage.getItem(VOTO_ESCOLHIDO_KEY);
-  if (!val) return null;
-  const id = parseInt(val);
-  return isNaN(id) ? null : id;
+  const json = window.localStorage.getItem(VOTO_ESCOLHIDO_KEY);
+  if (!json) return null;
+  try {
+    return JSON.parse(json) as VotoEscolhido;
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -70,4 +79,28 @@ export function getVotoEscolhido(): number | null {
 export function clearVotoEscolhido(): void {
   if (typeof window === 'undefined') return;
   window.localStorage.removeItem(VOTO_ESCOLHIDO_KEY);
+}
+
+/**
+ * Salva o timestamp do voto registrado (sucesso em POST /voto).
+ */
+export function setVotoRegistrado(timestamp: string): void {
+  if (typeof window === 'undefined') return;
+  window.localStorage.setItem(VOTO_REGISTRADO_KEY, timestamp);
+}
+
+/**
+ * Recupera o timestamp do voto registrado.
+ */
+export function getVotoRegistrado(): string | null {
+  if (typeof window === 'undefined') return null;
+  return window.localStorage.getItem(VOTO_REGISTRADO_KEY);
+}
+
+/**
+ * Remove o voto registrado (apos visualizar comprovante).
+ */
+export function clearVotoRegistrado(): void {
+  if (typeof window === 'undefined') return;
+  window.localStorage.removeItem(VOTO_REGISTRADO_KEY);
 }

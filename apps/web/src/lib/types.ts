@@ -50,3 +50,9 @@ export interface Cedula {
   motivo?: 'SETOR_SEM_CANDIDATOS' | 'SETOR_COM_UM_CANDIDATO';
   candidatos: Candidato[];
 }
+
+export interface VotoResult {
+  sucesso: boolean;
+  jaVotou?: boolean;
+  registradoEm?: Date | string;
+}
