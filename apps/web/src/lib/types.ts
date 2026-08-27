@@ -199,3 +199,26 @@ export interface JanelaStatusApi {
   abertaManual: boolean;
   fechadaManual: boolean;
 }
+
+// === Apuracao ===
+
+export interface CandidatoRanking {
+  candidatoId: number;
+  nome: string;
+  cargo: string | null;
+  votos: number;
+}
+
+export interface ResultadoSetor {
+  setorId: number;
+  setorNome: string;
+  ranking: CandidatoRanking[];
+  empate: boolean;
+  empatados: CandidatoRanking[];
+}
+
+export interface ResultadoApuracao {
+  edicaoId: number;
+  votacaoFechada: boolean;
+  setores: ResultadoSetor[];
+}
