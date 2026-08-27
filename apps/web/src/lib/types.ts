@@ -143,3 +143,39 @@ export interface ResultadoGravacao {
   eleitoresAtualizados: number;
   totalProcessados: number;
 }
+
+// === Candidatos ===
+
+export interface CandidatoDetalhado {
+  id: number;
+  nome: string;
+  cargo?: string | null;
+  ordemExibicao: number;
+  setorId: number;
+  edicaoId: number;
+  eleitorId?: number | null;
+  setor?: { id: number; nomeOficial: string; nomeExibido: string };
+}
+
+export interface CriarCandidatoDto {
+  edicaoId: number;
+  setorId: number;
+  eleitorId?: number;
+  nome: string;
+  cargo?: string;
+  ordemExibicao?: number;
+}
+
+export interface AtualizarCandidatoDto {
+  nome?: string;
+  cargo?: string;
+  ordemExibicao?: number;
+}
+
+export interface SetorAdmin {
+  id: number;
+  edicaoId: number;
+  nomeOficial: string;
+  nomeExibido: string;
+  agrupado: boolean;
+}
