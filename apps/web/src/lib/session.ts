@@ -104,3 +104,39 @@ export function clearVotoRegistrado(): void {
   if (typeof window === 'undefined') return;
   window.localStorage.removeItem(VOTO_REGISTRADO_KEY);
 }
+
+// Admin session
+const ADMIN_TOKEN_KEY = 'sda:admin-token';
+
+/**
+ * Salva o token de admin apos login bem-sucedido.
+ */
+export function setAdminToken(token: string): void {
+  if (typeof window === 'undefined') return;
+  window.localStorage.setItem(ADMIN_TOKEN_KEY, token);
+}
+
+/**
+ * Recupera o token de admin, ou null.
+ */
+export function getAdminToken(): string | null {
+  if (typeof window === 'undefined') return null;
+  return window.localStorage.getItem(ADMIN_TOKEN_KEY);
+}
+
+/**
+ * Remove o token de admin (logout).
+ */
+export function clearAdminToken(): void {
+  if (typeof window === 'undefined') return;
+  window.localStorage.removeItem(ADMIN_TOKEN_KEY);
+}
+
+/**
+ * Limpa sessao admin inteira.
+ */
+export function clearAdminSession(): void {
+  if (typeof window === 'undefined') return;
+  clearAdminToken();
+  clearToken();
+}
