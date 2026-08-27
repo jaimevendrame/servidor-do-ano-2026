@@ -56,3 +56,8 @@ export interface VotoResult {
   jaVotou?: boolean;
   registradoEm?: Date | string;
 }
+
+export interface StatusParticipacao {
+  jaVotou: boolean;
+  registradoEm: string | null;
+}

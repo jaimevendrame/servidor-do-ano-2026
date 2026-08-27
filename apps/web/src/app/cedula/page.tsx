@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { api, type ApiError } from '@/lib/api';
 import { getEleitor } from '@/lib/session';
 import { setVotoEscolhido } from '@/lib/session';
-import type { Eleitor, Cedula, JanelaStatus } from '@/lib/types';
+import type { Eleitor, Cedula, JanelaStatus, StatusParticipacao } from '@/lib/types';
 
 export default function CedulaPage() {
   const router = useRouter();
@@ -29,6 +29,16 @@ export default function CedulaPage() {
     // Carregar cedula
     (async () => {
       try {
+        // Primeiro, verificar se ja votou
+        const reentradaResp = await api.get<StatusParticipacao>(
+          `/reentrada/${dados.id}?edicaoId=1`
+        );
+
+        if (reentradaResp.data.jaVotou) {
+          router.replace('/ja-votou');
+          return;
+        }
+
         const response = await api.get<Cedula>(`/cedula/${dados.id}`);
         setCedula(response.data);
 
