@@ -222,3 +222,13 @@ export interface ResultadoApuracao {
   votacaoFechada: boolean;
   setores: ResultadoSetor[];
 }
+
+// === Auditoria ===
+
+export interface LogEntry {
+  id: number;
+  ator: string;
+  acao: string;
+  payload: unknown;
+  timestamp: string;
+}
