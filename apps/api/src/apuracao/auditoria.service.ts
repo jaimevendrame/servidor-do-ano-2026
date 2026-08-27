@@ -15,9 +15,10 @@ export class AuditoriaService {
   constructor(private readonly prisma: PrismaService) {}
 
   async registrar(ator: string, acao: string, payload?: unknown): Promise<void> {
-    await this.prisma.logAuditoria.create({
-      data: { ator, acao, payload: payload ?? null },
-    });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const dados: any = { ator, acao };
+    if (payload !== undefined) dados.payload = payload;
+    await this.prisma.logAuditoria.create({ data: dados });
   }
 
   async listar(filtros?: { ator?: string; acao?: string; de?: Date; ate?: Date }): Promise<LogEntry[]> {

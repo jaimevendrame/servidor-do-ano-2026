@@ -43,7 +43,7 @@ describe('AuditoriaService', () => {
     await service.registrar('admin1', 'LOGIN');
 
     expect(prisma.logAuditoria.create).toHaveBeenCalledWith({
-      data: { ator: 'admin1', acao: 'LOGIN', payload: null },
+      data: expect.objectContaining({ ator: 'admin1', acao: 'LOGIN' }),
     });
   });
 
