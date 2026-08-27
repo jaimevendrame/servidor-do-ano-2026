@@ -179,3 +179,23 @@ export interface SetorAdmin {
   nomeExibido: string;
   agrupado: boolean;
 }
+
+// === Painel admin ===
+
+export interface PainelAdmin {
+  edicaoId: number;
+  totalEleitores: number;
+  totalParticiparam: number;
+  percentual: number;
+  votacaoAberta: boolean;
+}
+
+// === Janela (shape real retornado por GET /janela/:edicaoId) ===
+
+export interface JanelaStatusApi {
+  aberta: boolean;
+  dataInicio: string;
+  dataFim: string;
+  abertaManual: boolean;
+  fechadaManual: boolean;
+}
