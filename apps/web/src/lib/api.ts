@@ -55,11 +55,15 @@ function extrairMensagemBackend(data: unknown): string | undefined {
 }
 
 export const api: AxiosInstance = axios.create({
-  baseURL: getBaseUrl(),
+  baseURL: '', // será preenchido no primeiro uso (lazy)
   timeout: 15000,
 });
 
+// Setter lazy do baseURL no primeiro uso
 api.interceptors.request.use(config => {
+  if (!config.baseURL) {
+    config.baseURL = getBaseUrl();
+  }
   const token = getToken();
   if (token) {
     config.headers.set('Authorization', `Bearer ${token}`);
