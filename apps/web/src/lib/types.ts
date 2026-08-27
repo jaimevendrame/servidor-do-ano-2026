@@ -61,3 +61,19 @@ export interface StatusParticipacao {
   jaVotou: boolean;
   registradoEm: string | null;
 }
+
+export interface LoginAdminDto {
+  username: string;
+  senha: string;
+  totpCode?: string;
+}
+
+export interface LoginAdminResponse {
+  token: string;
+  totpRequired: boolean;
+}
+
+export interface TotpSetupResponse {
+  secret: string;
+  qrCode: string;
+}
