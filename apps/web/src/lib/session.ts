@@ -38,6 +38,36 @@ export function getEleitor(): Eleitor | null {
 export function clearSession(): void {
   if (typeof window === 'undefined') return;
   window.localStorage.removeItem(ELEITOR_KEY);
+  clearVotoEscolhido();
   // Token ja eh limpo em api.ts interceptor, mas podemos chamar explicitamente
   clearToken();
+}
+
+const VOTO_ESCOLHIDO_KEY = 'sda:voto-escolhido';
+
+/**
+ * Salva o candidatoId escolhido na cedula (antes da confirmacao).
+ */
+export function setVotoEscolhido(candidatoId: number): void {
+  if (typeof window === 'undefined') return;
+  window.localStorage.setItem(VOTO_ESCOLHIDO_KEY, String(candidatoId));
+}
+
+/**
+ * Recupera o candidatoId escolhido, ou null.
+ */
+export function getVotoEscolhido(): number | null {
+  if (typeof window === 'undefined') return null;
+  const val = window.localStorage.getItem(VOTO_ESCOLHIDO_KEY);
+  if (!val) return null;
+  const id = parseInt(val);
+  return isNaN(id) ? null : id;
+}
+
+/**
+ * Remove o voto escolhido (apos gravar ou ao voltar).
+ */
+export function clearVotoEscolhido(): void {
+  if (typeof window === 'undefined') return;
+  window.localStorage.removeItem(VOTO_ESCOLHIDO_KEY);
 }
