@@ -49,3 +49,21 @@ o container. Nao toca no banco de producao.
 1. [ ] Rodar `backup.sh` e guardar o dump
 2. [ ] Rodar `test-restore.sh` e confirmar SUCESSO
 3. [ ] Guardar o backup em local seguro (fora do VPS)
+
+## Ensaio ponta a ponta (PRD §13 item 9)
+
+Script que simula votacao completa: seed → abrir janela → 30 votos → fechar → apurar → expurgar.
+
+```bash
+cd apps/api
+npx ts-node ../../infra/scripts/ensaio.ts
+```
+
+O script:
+- Cria 30 eleitores fictícios em 3 setores
+- Registra 30 votos (participacao + voto em transacao, sem vinculo)
+- Apura ranking por setor com deteccao de empate
+- Verifica integridade (regras #2, #3)
+- Expurga TODOS os dados ao final (nada persiste)
+
+Nenhum dado real de servidor utilizado.
