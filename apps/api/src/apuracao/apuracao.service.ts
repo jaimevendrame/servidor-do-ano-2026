@@ -37,9 +37,11 @@ export class ApuracaoService {
     // Verifica se votação está fechada
     const janela = await this.prisma.janelaVotacao.findUnique({ where: { edicaoId } });
     const agora = new Date();
-    const votacaoFechada = janela
-      ? (agora > janela.dataFim || janela.fechadaManual) && !janela.abertaManual
-      : true;
+    // fechadaManual sobrepõe tudo; senão, aberta = dentro da janela ou abertaManual
+    const aberta = janela
+      ? ((agora >= janela.dataInicio && agora <= janela.dataFim) || janela.abertaManual) && !janela.fechadaManual
+      : false;
+    const votacaoFechada = !aberta;
 
     if (!votacaoFechada) {
       throw new Error('Apuracao so pode ser executada apos o fechamento da votacao');

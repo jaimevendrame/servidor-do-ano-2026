@@ -39,6 +39,19 @@ describe('ApuracaoService', () => {
     await expect(service.apurar(1)).rejects.toThrow('fechamento');
   });
 
+  it('permite apuracao quando abertaManual=true mas fechadaManual=true (fechamento sobrepoe)', async () => {
+    (prisma.janelaVotacao.findUnique as jest.Mock).mockResolvedValue({
+      dataInicio: new Date('2030-01-01'),
+      dataFim: new Date('2030-01-02'),
+      abertaManual: true,
+      fechadaManual: true,
+    });
+    (prisma.setor.findMany as jest.Mock).mockResolvedValue([]);
+
+    const resultado = await service.apurar(1);
+    expect(resultado.votacaoFechada).toBe(true);
+  });
+
   it('retorna ranking por setor apos fechamento', async () => {
     (prisma.janelaVotacao.findUnique as jest.Mock).mockResolvedValue({
       dataInicio: new Date('2020-01-01'),
