@@ -7,7 +7,7 @@ O PRD completo está em `docs/PRD.md` — leia antes de qualquer decisão de esc
 - `apps/web` — Next.js (App Router), TypeScript
 - `apps/api` — NestJS, TypeScript, Prisma
 - PostgreSQL + Redis (containers internos ao stack)
-- Deploy: Docker Swarm + Traefik (rede `network_public`), via API do Portainer
+- Deploy: Coolify (self-hosted PaaS), TLS automático, auto-deploy do GitHub na branch main
 
 ## Regras invioláveis do domínio
 1. **Nunca exibir parcial de votos durante a votação** — nem para o admin. Só o total de participação.
