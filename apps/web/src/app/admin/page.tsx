@@ -6,13 +6,14 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { api, type ApiError } from '@/lib/api';
 import { getAdminToken, clearAdminSession } from '@/lib/session';
+import { useEdicao } from '@/lib/edicao-context';
 import type { PainelAdmin, JanelaStatusApi } from '@/lib/types';
 
-const EDICAO_ID = 1;
 const REFRESH_INTERVAL_MS = 15000;
 
 export default function AdminPage() {
   const router = useRouter();
+  const { edicaoId } = useEdicao();
   const [painel, setPainel] = useState<PainelAdmin | null>(null);
   const [janela, setJanela] = useState<JanelaStatusApi | null>(null);
   const [erro, setErro] = useState<string | null>(null);
@@ -20,10 +21,12 @@ export default function AdminPage() {
   const [acaoJanela, setAcaoJanela] = useState<'abrir' | 'fechar' | null>(null);
 
   const carregar = useCallback(async () => {
+    if (!edicaoId) return;
+
     try {
       const [painelResp, janelaResp] = await Promise.all([
-        api.get<PainelAdmin>(`/admin/painel/${EDICAO_ID}`),
-        api.get<JanelaStatusApi>(`/janela/${EDICAO_ID}`),
+        api.get<PainelAdmin>(`/admin/painel/${edicaoId}`),
+        api.get<JanelaStatusApi>(`/janela/${edicaoId}`),
       ]);
       setPainel(painelResp.data);
       setJanela(janelaResp.data);
@@ -34,7 +37,7 @@ export default function AdminPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [edicaoId]);
 
   useEffect(() => {
     if (!getAdminToken()) {
@@ -47,13 +50,15 @@ export default function AdminPage() {
   }, [router, carregar]);
 
   const handleJanela = async (acao: 'abrir' | 'fechar') => {
+    if (!edicaoId) return;
+
     const acaoLabel = acao === 'abrir' ? 'abrir' : 'fechar';
     if (!window.confirm(`Tem certeza que deseja ${acaoLabel} a votacao?`)) return;
 
     setAcaoJanela(acao);
     setErro(null);
     try {
-      await api.put(`/janela/${EDICAO_ID}/${acao}`, { ator: 'admin' });
+      await api.put(`/janela/${edicaoId}/${acao}`, { ator: 'admin' });
       await carregar();
     } catch (err) {
       const apiErr = err as ApiError;
@@ -76,12 +81,22 @@ export default function AdminPage() {
     );
   }
 
+  if (!edicaoId) {
+    return (
+      <div className="mx-auto w-full max-w-4xl space-y-6 py-12 text-center">
+        <p className="text-destructive">Nenhuma eleição selecionada</p>
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto w-full max-w-4xl space-y-6 py-12">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-primary">Painel administrativo</h1>
-          <p className="text-sm text-muted-foreground">Edicao {EDICAO_ID}</p>
+          <p className="text-sm text-muted-foreground">
+            {painel && `Eleição ${painel.edicaoId === edicaoId ? painel.edicaoId : edicaoId}`}
+          </p>
         </div>
         <Button variant="outline" size="sm" onClick={handleSair}>
           Sair

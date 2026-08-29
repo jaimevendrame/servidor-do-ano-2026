@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
+import { EdicaoProvider } from '@/lib/edicao-context';
 import './globals.css';
 
 const inter = Inter({
@@ -19,9 +20,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="pt-BR" className={inter.variable}>
       <body className="flex min-h-screen flex-col bg-background text-foreground">
-        <Header />
-        <main className="container flex-1 py-8">{children}</main>
-        <Footer />
+        <EdicaoProvider>
+          <Header />
+          <main className="container flex-1 py-8">{children}</main>
+          <Footer />
+        </EdicaoProvider>
       </body>
     </html>
   );
