@@ -208,6 +208,15 @@ export default function AdminPage() {
             </p>
           </Link>
           <Link
+            href="/admin/gerenciar-eleicoes"
+            className="rounded-lg border border-border bg-card p-4 transition hover:border-primary hover:bg-accent"
+          >
+            <p className="font-semibold text-primary">Gerenciar Eleições</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Configurar datas de início e fim (CRON auto)
+            </p>
+          </Link>
+          <Link
             href="/admin/apuracao"
             className="rounded-lg border border-border bg-card p-4 transition hover:border-primary hover:bg-accent"
           >
