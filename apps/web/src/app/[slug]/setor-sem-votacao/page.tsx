@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { api, type ApiError } from '@/lib/api';
 import { getEleitor, clearSession } from '@/lib/session';
@@ -9,6 +9,8 @@ import type { Eleitor, Cedula } from '@/lib/types';
 
 export default function SetorSemVotacaoPage() {
   const router = useRouter();
+  const params = useParams();
+  const slug = params.slug as string;
   const [eleitor, setEleitor] = useState<Eleitor | null>(null);
   const [cedula, setCedula] = useState<Cedula | null>(null);
   const [carregando, setCarregando] = useState(true);
@@ -17,20 +19,18 @@ export default function SetorSemVotacaoPage() {
   useEffect(() => {
     const dados = getEleitor();
     if (!dados) {
-      router.replace('/login');
+      router.replace(`/${slug}/login`);
       return;
     }
     setEleitor(dados);
 
-    // Consultar cedula para descobrir motivo
     (async () => {
       try {
         const response = await api.get<Cedula>(`/cedula/${dados.id}`);
         setCedula(response.data);
 
-        // Se votavel, redirecionar para cedula (nao deveria estar aqui)
         if (response.data.votavel) {
-          router.replace('/cedula');
+          router.replace(`/${slug}/cedula`);
           return;
         }
       } catch (err) {
@@ -40,7 +40,7 @@ export default function SetorSemVotacaoPage() {
         setCarregando(false);
       }
     })();
-  }, [router]);
+  }, [router, slug]);
 
   if (carregando) {
     return (

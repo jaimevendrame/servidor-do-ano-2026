@@ -1,15 +1,16 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { api, type ApiError } from '@/lib/api';
-import { getEleitor } from '@/lib/session';
-import { setVotoEscolhido } from '@/lib/session';
+import { getEleitor, getEdicaoEleitor, setVotoEscolhido } from '@/lib/session';
 import type { Eleitor, Cedula, JanelaStatus, StatusParticipacao } from '@/lib/types';
 
 export default function CedulaPage() {
   const router = useRouter();
+  const params = useParams();
+  const slug = params.slug as string;
   const [eleitor, setEleitor] = useState<Eleitor | null>(null);
   const [cedula, setCedula] = useState<Cedula | null>(null);
   const [selectedCandidatoId, setSelectedCandidatoId] = useState<number | null>(null);
@@ -20,36 +21,33 @@ export default function CedulaPage() {
 
   useEffect(() => {
     const dados = getEleitor();
-    if (!dados) {
-      router.replace('/login');
+    const edicaoCtx = getEdicaoEleitor();
+    if (!dados || !edicaoCtx) {
+      router.replace(`/${slug}/login`);
       return;
     }
     setEleitor(dados);
 
-    // Carregar cedula
     (async () => {
       try {
-        // Primeiro, verificar se ja votou
         const reentradaResp = await api.get<StatusParticipacao>(
-          `/reentrada/${dados.id}?edicaoId=1`
+          `/reentrada/${dados.id}?edicaoId=${edicaoCtx.edicaoId}`
         );
 
         if (reentradaResp.data.jaVotou) {
-          router.replace('/ja-votou');
+          router.replace(`/${slug}/ja-votou`);
           return;
         }
 
         const response = await api.get<Cedula>(`/cedula/${dados.id}`);
         setCedula(response.data);
 
-        // Se nao votavel, redirecionar para setor-sem-votacao
         if (!response.data.votavel) {
-          router.replace('/setor-sem-votacao');
+          router.replace(`/${slug}/setor-sem-votacao`);
           return;
         }
 
-        // Carregar janela para countdown
-        const janelaResp = await api.get<JanelaStatus>('/janela/1');
+        const janelaResp = await api.get<JanelaStatus>(`/janela/${edicaoCtx.edicaoId}`);
         iniciarCountdown(janelaResp.data);
       } catch (err) {
         const apiErr = err as ApiError;
@@ -58,7 +56,7 @@ export default function CedulaPage() {
         setLoading(false);
       }
     })();
-  }, [router]);
+  }, [router, slug]);
 
   function iniciarCountdown(janela: JanelaStatus) {
     const calcularTempo = () => {
@@ -74,7 +72,6 @@ export default function CedulaPage() {
       const minutos = Math.floor(diff / 60000);
       const segundos = Math.floor((diff % 60000) / 1000);
 
-      // Mostrar countdown so se faltam <=5 minutos
       if (minutos <= 5) {
         setTempoRestante(`${minutos}:${segundos.toString().padStart(2, '0')}`);
       } else {
@@ -95,9 +92,8 @@ export default function CedulaPage() {
 
     setVotando(true);
     try {
-      // Salvar candidato escolhido e redirecionar para confirmacao
       setVotoEscolhido({ id: candidato.id, nome: candidato.nome });
-      router.push('/confirmar-voto');
+      router.push(`/${slug}/confirmar-voto`);
     } catch (err) {
       const apiErr = err as ApiError;
       setErro(apiErr.message);
@@ -157,7 +153,7 @@ export default function CedulaPage() {
           >
             <div className="flex items-start gap-4">
               <div
-                className={`mt-1 h-5 w-5 rounded-full border-2 flex-shrink-0 ${
+                className={`mt-1 h-5 w-5 flex-shrink-0 rounded-full border-2 ${
                   selectedCandidatoId === candidato.id
                     ? 'border-primary bg-primary'
                     : 'border-border'
