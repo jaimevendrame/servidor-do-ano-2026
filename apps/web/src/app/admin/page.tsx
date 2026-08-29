@@ -199,6 +199,15 @@ export default function AdminPage() {
             <p className="mt-1 text-xs text-muted-foreground">Gerenciar candidatos por setor</p>
           </Link>
           <Link
+            href="/admin/eleitores"
+            className="rounded-lg border border-border bg-card p-4 transition hover:border-primary hover:bg-accent"
+          >
+            <p className="font-semibold text-primary">Eleitores</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Listar, bloquear e desbloquear eleitores
+            </p>
+          </Link>
+          <Link
             href="/admin/apuracao"
             className="rounded-lg border border-border bg-card p-4 transition hover:border-primary hover:bg-accent"
           >
