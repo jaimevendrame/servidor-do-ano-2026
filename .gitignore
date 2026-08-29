@@ -11,3 +11,7 @@ coverage/
 uploads/
 *.xlsx
 *.xls
+
+# Artefatos locais (nunca versionar)
+docker-compose.override.yml
+graphify-out/
