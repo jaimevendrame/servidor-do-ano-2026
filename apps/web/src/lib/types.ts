@@ -22,6 +22,7 @@ export interface Eleitor {
 export interface LoginEleitorDto {
   cpf: string;
   dataAdmissao: string; // YYYY-MM-DD
+  edicaoId: number;
 }
 
 export interface LoginResponseDto {
@@ -231,4 +232,31 @@ export interface LogEntry {
   acao: string;
   payload: unknown;
   timestamp: string;
+}
+
+// === Edicao (eleicao) ===
+
+export interface Edicao {
+  id: number;
+  ano: number;
+  slug: string;
+  nomePrefeitura: string;
+  cidade: string | null;
+  descricao: string | null;
+  ativo: boolean;
+  criadoEm: string; // ISO
+}
+
+export type StatusVotacao = 'sem_janela' | 'em_breve' | 'aberta' | 'encerrada';
+
+export interface EdicaoAtiva extends Edicao {
+  vigencia: { dataInicio: string; dataFim: string } | null;
+  statusVotacao: StatusVotacao;
+}
+
+export interface CriarEdicaoDto {
+  ano: number;
+  nomePrefeitura: string;
+  cidade?: string;
+  descricao?: string;
 }
