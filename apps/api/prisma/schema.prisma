@@ -54,15 +54,18 @@ model Setor {
 // Eleitor
 // ──────────────────────────────────────────────
 model Eleitor {
-  id           Int      @id @default(autoincrement())
-  edicaoId     Int
-  setorId      Int
-  cpf          String
-  nome         String
-  dataAdmissao DateTime @db.Date
-  cargo        String?
-  criadoEm     DateTime @default(now())
-  atualizadoEm DateTime @updatedAt
+  id             Int      @id @default(autoincrement())
+  edicaoId       Int
+  setorId        Int
+  cpf            String
+  nome           String
+  dataAdmissao   DateTime @db.Date
+  cargo          String?
+  status         String   @default("ativo") // "ativo" | "bloqueado"
+  motivoBloqueio String?
+  dataBloqueio   DateTime?
+  criadoEm       DateTime @default(now())
+  atualizadoEm   DateTime @updatedAt
 
   edicao        Edicao         @relation(fields: [edicaoId], references: [id])
   setor         Setor          @relation(fields: [setorId], references: [id])

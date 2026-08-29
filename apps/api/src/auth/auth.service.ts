@@ -44,6 +44,12 @@ export class AuthService {
       throw new Error(msg);
     }
 
+    // Valida status do eleitor
+    if (eleitor.status === 'bloqueado') {
+      const motivo = eleitor.motivoBloqueio ? ` Motivo: ${eleitor.motivoBloqueio}` : '';
+      throw new Error(`Seu acesso foi revogado.${motivo}`);
+    }
+
     // Sucesso: reseta contador
     await this.rateLimitService.resetar(cpfLimpo);
 
