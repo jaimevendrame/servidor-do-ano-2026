@@ -11,10 +11,14 @@ datasource db {
 // Edição (ex: 2026)
 // ──────────────────────────────────────────────
 model Edicao {
-  id       Int      @id @default(autoincrement())
-  ano      Int      @unique
-  ativo    Boolean  @default(true)
-  criadoEm DateTime @default(now())
+  id             Int      @id @default(autoincrement())
+  ano            Int      @unique
+  slug           String   @unique
+  nomePrefeitura String
+  cidade         String?
+  descricao      String?
+  ativo          Boolean  @default(true)
+  criadoEm       DateTime @default(now())
 
   setores       Setor[]
   eleitores     Eleitor[]
