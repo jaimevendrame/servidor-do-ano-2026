@@ -6,9 +6,10 @@ import { VotacaoStatusService } from './votacao-status.service';
 import { VotacaoStatusController } from './votacao-status.controller';
 import { SetoresController } from './setores.controller';
 import { PrismaModule } from '../prisma/prisma.module';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
-  imports: [PrismaModule],
+  imports: [PrismaModule, AuthModule],
   providers: [CandidatosService, VotacaoStatusService],
   controllers: [CandidatosController, VotacaoStatusController, SetoresController],
   exports: [CandidatosService, VotacaoStatusService],

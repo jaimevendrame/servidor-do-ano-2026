@@ -19,6 +19,7 @@ export class JanelaController {
   constructor(private readonly janelaService: JanelaService) {}
 
   @Post()
+  @UseGuards(AdminAuthGuard)
   async criar(@Body() dto: CriarJanelaDto) {
     try {
       return await this.janelaService.criar(dto);
@@ -35,11 +36,13 @@ export class JanelaController {
   }
 
   @Put(':edicaoId/abrir')
-  async abrir(@Param('edicaoId') edicaoId: string, @Body() body: { ator: string }) {
+  @UseGuards(AdminAuthGuard)
+  async abrir(@Param('edicaoId') edicaoId: string, @Req() req: Request) {
     const id = parseInt(edicaoId);
     if (isNaN(id)) throw new BadRequestException('edicaoId invalido');
+    const ator = (req as Request & { adminUsername?: string }).adminUsername || 'admin';
     try {
-      await this.janelaService.abrirManual(id, body.ator);
+      await this.janelaService.abrirManual(id, ator);
       return { ok: true };
     } catch (error) {
       throw new BadRequestException(error instanceof Error ? error.message : 'Erro');
@@ -47,11 +50,13 @@ export class JanelaController {
   }
 
   @Put(':edicaoId/fechar')
-  async fechar(@Param('edicaoId') edicaoId: string, @Body() body: { ator: string }) {
+  @UseGuards(AdminAuthGuard)
+  async fechar(@Param('edicaoId') edicaoId: string, @Req() req: Request) {
     const id = parseInt(edicaoId);
     if (isNaN(id)) throw new BadRequestException('edicaoId invalido');
+    const ator = (req as Request & { adminUsername?: string }).adminUsername || 'admin';
     try {
-      await this.janelaService.fecharManual(id, body.ator);
+      await this.janelaService.fecharManual(id, ator);
       return { ok: true };
     } catch (error) {
       throw new BadRequestException(error instanceof Error ? error.message : 'Erro');

@@ -1,6 +1,7 @@
 import axios, { AxiosError, AxiosInstance } from 'axios';
 
 const TOKEN_KEY = 'sda:token';
+const ADMIN_TOKEN_KEY = 'sda:admin-token';
 
 export class ApiError extends Error {
   readonly status: number;
@@ -64,7 +65,22 @@ api.interceptors.request.use(config => {
   if (!config.baseURL) {
     config.baseURL = getBaseUrl();
   }
-  const token = getToken();
+  // Rotas admin exigem o token de admin; as demais usam o do eleitor.
+  // O token admin tem precedência quando a URL é de recurso administrativo.
+  const url = config.url ?? '';
+  const isAdminRoute =
+    url.includes('/admin/') ||
+    url.startsWith('/importacao') ||
+    url.startsWith('importacao') ||
+    // mutações de recursos administrativos
+    ((config.method === 'post' || config.method === 'put' || config.method === 'delete') &&
+      (url.includes('/candidatos') || url.includes('/edicoes') || url.includes('/janela')));
+
+  const adminToken =
+    typeof window !== 'undefined' ? window.localStorage.getItem(ADMIN_TOKEN_KEY) : null;
+  const eleitorToken = getToken();
+  const token = isAdminRoute && adminToken ? adminToken : (eleitorToken ?? adminToken);
+
   if (token) {
     config.headers.set('Authorization', `Bearer ${token}`);
   }

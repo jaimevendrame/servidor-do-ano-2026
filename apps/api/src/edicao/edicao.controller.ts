@@ -1,6 +1,17 @@
 /* eslint-disable prettier/prettier */
-import { Controller, Get, Post, Put, Param, Body, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Param,
+  Body,
+  UseGuards,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { EdicaoService, CriarEdicaoDto, EdicaoDto, EdicaoAtivaDto } from './edicao.service';
+import { AdminAuthGuard } from '../auth/admin-auth.guard';
 
 @Controller('edicoes')
 export class EdicaoController {
@@ -8,10 +19,11 @@ export class EdicaoController {
 
   /**
    * POST /api/edicoes
-   * Cria uma nova eleição (edição).
+   * Cria uma nova eleição (edição). ADMIN.
    * Body: { ano, nomePrefeitura, cidade?, descricao? }
    */
   @Post()
+  @UseGuards(AdminAuthGuard)
   async criar(@Body() dto: CriarEdicaoDto): Promise<EdicaoDto> {
     if (!dto.nomePrefeitura || dto.nomePrefeitura.trim().length === 0) {
       throw new BadRequestException('Nome da prefeitura é obrigatório');
@@ -93,6 +105,7 @@ export class EdicaoController {
    * Ativa uma eleição.
    */
   @Put(':id/ativar')
+  @UseGuards(AdminAuthGuard)
   async ativar(@Param('id') id: string): Promise<EdicaoDto> {
     const eid = parseInt(id);
     if (isNaN(eid)) throw new BadRequestException('ID invalido');
@@ -111,6 +124,7 @@ export class EdicaoController {
    * Desativa uma eleição.
    */
   @Put(':id/desativar')
+  @UseGuards(AdminAuthGuard)
   async desativar(@Param('id') id: string): Promise<EdicaoDto> {
     const eid = parseInt(id);
     if (isNaN(eid)) throw new BadRequestException('ID invalido');
