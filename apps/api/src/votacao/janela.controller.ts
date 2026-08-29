@@ -1,6 +1,18 @@
 /* eslint-disable prettier/prettier */
-import { Controller, Get, Post, Put, Body, Param, BadRequestException } from '@nestjs/common';
-import { JanelaService, CriarJanelaDto } from './janela.service';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Body,
+  Param,
+  Req,
+  UseGuards,
+  BadRequestException,
+} from '@nestjs/common';
+import { Request } from 'express';
+import { JanelaService, CriarJanelaDto, AtualizarDatasDto } from './janela.service';
+import { AdminAuthGuard } from '../auth/admin-auth.guard';
 
 @Controller('janela')
 export class JanelaController {
@@ -43,6 +55,33 @@ export class JanelaController {
       return { ok: true };
     } catch (error) {
       throw new BadRequestException(error instanceof Error ? error.message : 'Erro');
+    }
+  }
+
+  /**
+   * PUT /api/admin/edicoes/:edicaoId/janela/datas
+   * Atualiza as datas de início/fim da janela de votação.
+   * Protegido por AdminAuthGuard (requer JWT admin válido).
+   * Body: { dataInicio, dataFim, timezone? }
+   */
+  @Put(':edicaoId/datas')
+  @UseGuards(AdminAuthGuard)
+  async atualizarDatas(
+    @Param('edicaoId') edicaoId: string,
+    @Body() dto: AtualizarDatasDto,
+    @Req() req: Request
+  ) {
+    const id = parseInt(edicaoId);
+    if (isNaN(id)) throw new BadRequestException('edicaoId inválido');
+
+    const ator = (req as Request & { adminUsername?: string }).adminUsername || 'admin';
+
+    try {
+      return await this.janelaService.atualizarDatas(id, dto, ator);
+    } catch (error) {
+      throw new BadRequestException(
+        error instanceof Error ? error.message : 'Erro ao atualizar datas'
+      );
     }
   }
 }
