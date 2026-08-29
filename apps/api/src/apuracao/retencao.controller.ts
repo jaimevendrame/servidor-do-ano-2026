@@ -1,8 +1,10 @@
 /* eslint-disable prettier/prettier */
-import { Controller, Get, Post, Param, Body, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Param, Body, UseGuards, BadRequestException } from '@nestjs/common';
 import { RetencaoService } from './retencao.service';
+import { AdminAuthGuard } from '../auth/admin-auth.guard';
 
 @Controller('admin/retencao')
+@UseGuards(AdminAuthGuard)
 export class RetencaoController {
   constructor(private readonly retencaoService: RetencaoService) {}
 

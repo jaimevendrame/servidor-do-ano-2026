@@ -1,8 +1,10 @@
 /* eslint-disable prettier/prettier */
-import { Controller, Get, Param, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Param, UseGuards, BadRequestException } from '@nestjs/common';
 import { PainelAdminService, PainelAdmin } from './painel-admin.service';
+import { AdminAuthGuard } from '../auth/admin-auth.guard';
 
 @Controller('admin/painel')
+@UseGuards(AdminAuthGuard)
 export class PainelAdminController {
   constructor(private readonly painelService: PainelAdminService) {}
 

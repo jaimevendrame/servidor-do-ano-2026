@@ -58,7 +58,7 @@ export default function AdminPage() {
     setAcaoJanela(acao);
     setErro(null);
     try {
-      await api.put(`/janela/${edicaoId}/${acao}`, { ator: 'admin' });
+      await api.put(`/janela/${edicaoId}/${acao}`, {});
       await carregar();
     } catch (err) {
       const apiErr = err as ApiError;

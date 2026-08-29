@@ -3,6 +3,7 @@ import {
   Post,
   UploadedFile,
   UseInterceptors,
+  UseGuards,
   Body,
   BadRequestException,
 } from '@nestjs/common';
@@ -15,8 +16,10 @@ import {
   PreviewNormalizacaoDto,
   GravarDto,
 } from './dto/importacao.dto';
+import { AdminAuthGuard } from '../auth/admin-auth.guard';
 
 @Controller('importacao')
+@UseGuards(AdminAuthGuard)
 export class ImportacaoController {
   constructor(
     private readonly importacaoService: ImportacaoService,

@@ -9,9 +9,10 @@ import { AuditoriaController } from './auditoria.controller';
 import { RetencaoService } from './retencao.service';
 import { RetencaoController } from './retencao.controller';
 import { PrismaModule } from '../prisma/prisma.module';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
-  imports: [PrismaModule],
+  imports: [PrismaModule, AuthModule],
   providers: [PainelAdminService, ApuracaoService, AuditoriaService, RetencaoService],
   controllers: [PainelAdminController, ApuracaoController, AuditoriaController, RetencaoController],
   exports: [PainelAdminService, ApuracaoService, AuditoriaService, RetencaoService],
