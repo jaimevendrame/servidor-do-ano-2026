@@ -7,9 +7,10 @@ import { CandidatosModule } from './candidatos/candidatos.module';
 import { VotacaoModule } from './votacao/votacao.module';
 import { ApuracaoModule } from './apuracao/apuracao.module';
 import { HealthModule } from './health/health.module';
+import { EdicaoModule } from './edicao/edicao.module';
 
 @Module({
-  imports: [PrismaModule, ImportacaoModule, AuthModule, CandidatosModule, VotacaoModule, ApuracaoModule, HealthModule],
+  imports: [PrismaModule, ImportacaoModule, AuthModule, CandidatosModule, VotacaoModule, ApuracaoModule, HealthModule, EdicaoModule],
   controllers: [],
   providers: [],
 })
