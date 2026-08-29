@@ -1,36 +1,37 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { getEleitor } from '@/lib/session';
-import { clearSession } from '@/lib/session';
+import { getEleitor, clearSession } from '@/lib/session';
 import type { Eleitor } from '@/lib/types';
 
 export default function ConfirmarPage() {
   const router = useRouter();
+  const params = useParams();
+  const slug = params.slug as string;
   const [eleitor, setEleitor] = useState<Eleitor | null>(null);
 
   useEffect(() => {
     const dados = getEleitor();
     if (!dados) {
-      router.replace('/login');
+      router.replace(`/${slug}/login`);
       return;
     }
     setEleitor(dados);
-  }, [router]);
+  }, [router, slug]);
 
   if (!eleitor) {
-    return null; // redirect em andamento
+    return null;
   }
 
   const handleSouEu = () => {
-    router.push('/cedula');
+    router.push(`/${slug}/cedula`);
   };
 
   const handleNaoSouEu = () => {
     clearSession();
-    router.push('/login');
+    router.push(`/${slug}/login`);
   };
 
   return (

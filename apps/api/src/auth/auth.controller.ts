@@ -9,10 +9,11 @@ export class AuthController {
 
   @Post('eleitor/login')
   async loginEleitor(@Body() dto: LoginEleitorDto): Promise<LoginResponseDto> {
+    if (!dto.edicaoId || isNaN(Number(dto.edicaoId))) {
+      throw new BadRequestException('Eleição não informada');
+    }
     try {
-      // TODO: quando tiver multiplas edicoes, pegar da request
-      const edicaoId = 1; // temporario
-      return await this.authService.loginEleitor(dto, edicaoId);
+      return await this.authService.loginEleitor(dto, Number(dto.edicaoId));
     } catch (error) {
       throw new BadRequestException(
         error instanceof Error ? error.message : 'Login falhou'

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { getEleitor, getVotoRegistrado, clearSession } from '@/lib/session';
 import { downloadComprovante } from '@/lib/download';
@@ -9,6 +9,8 @@ import type { Eleitor } from '@/lib/types';
 
 export default function RegistradoPage() {
   const router = useRouter();
+  const params = useParams();
+  const slug = params.slug as string;
   const [eleitor, setEleitor] = useState<Eleitor | null>(null);
   const [timestamp, setTimestamp] = useState<string | null>(null);
   const [baixando, setBaixando] = useState(false);
@@ -17,19 +19,19 @@ export default function RegistradoPage() {
   useEffect(() => {
     const dados = getEleitor();
     if (!dados) {
-      router.replace('/login');
+      router.replace(`/${slug}/login`);
       return;
     }
 
     const ts = getVotoRegistrado();
     if (!ts) {
-      router.replace('/cedula');
+      router.replace(`/${slug}/cedula`);
       return;
     }
 
     setEleitor(dados);
     setTimestamp(ts);
-  }, [router]);
+  }, [router, slug]);
 
   if (!eleitor || !timestamp) {
     return null;
@@ -51,7 +53,6 @@ export default function RegistradoPage() {
     router.push('/');
   };
 
-  // Formatar timestamp para PT-BR
   const dataObj = new Date(timestamp);
   const dataFormatada = dataObj.toLocaleDateString('pt-BR', {
     year: 'numeric',

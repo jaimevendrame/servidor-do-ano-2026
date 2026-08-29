@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import { EdicaoSelector } from './edicao-selector';
 
 export function Header() {
   return (
@@ -13,6 +14,7 @@ export function Header() {
           </div>
         </Link>
         <nav className="flex items-center gap-4 text-sm">
+          <EdicaoSelector />
           <Link href="/" className="text-foreground/80 hover:text-primary">
             Inicio
           </Link>

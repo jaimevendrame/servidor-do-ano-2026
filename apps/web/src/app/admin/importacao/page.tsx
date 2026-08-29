@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { api, type ApiError } from '@/lib/api';
 import { getAdminToken } from '@/lib/session';
 import { uploadArquivo } from '@/lib/upload';
+import { useEdicao } from '@/lib/edicao-context';
 import type {
   LinhaXlsRaw,
   ResultadoValidacao,
@@ -21,6 +22,7 @@ type Etapa = 'upload' | 'validacao' | 'normalizacao' | 'confirmacao' | 'concluid
 
 export default function ImportacaoPage() {
   const router = useRouter();
+  const { edicaoId } = useEdicao();
   const [etapa, setEtapa] = useState<Etapa>('upload');
   const [arquivo, setArquivo] = useState<File | null>(null);
   const [linhasRaw, setLinhasRaw] = useState<LinhaXlsRaw[]>([]);
@@ -121,7 +123,7 @@ export default function ImportacaoPage() {
       setLoading(true);
       try {
         const resp = await api.post<ResultadoGravacao>('/importacao/gravar', {
-          edicaoId: 1,
+          edicaoId: edicaoId || 1,
           linhas: validacao?.validas || [],
           setores: preview?.setores || [],
           ator: 'admin',
@@ -161,6 +163,53 @@ export default function ImportacaoPage() {
 
       {etapa === 'upload' && (
         <form onSubmit={handleUpload} className="space-y-4">
+          <div className="space-y-3 rounded-lg border border-border bg-muted/40 p-4">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-sm font-medium">Modelo de planilha</p>
+                <p className="text-xs text-muted-foreground">
+                  Baixe o arquivo modelo, preencha com os servidores e faca o upload.
+                </p>
+              </div>
+              <div className="flex shrink-0 gap-2">
+                <Button asChild variant="outline" size="sm">
+                  <a href="/modelo-importacao-servidores.xlsx" download>
+                    Modelo vazio (.xlsx)
+                  </a>
+                </Button>
+                <Button asChild variant="outline" size="sm">
+                  <a href="/modelo-teste-grande.xlsx" download>
+                    Exemplo com dados (39)
+                  </a>
+                </Button>
+              </div>
+            </div>
+            <div className="text-xs text-muted-foreground">
+              <p className="mb-1 font-medium text-foreground">Colunas obrigatorias:</p>
+              <ul className="ml-4 list-disc space-y-0.5">
+                <li>
+                  <strong>Nome</strong> (ou Nome Completo / Servidor)
+                </li>
+                <li>
+                  <strong>CPF</strong> — com ou sem mascara, digito verificador valido
+                </li>
+                <li>
+                  <strong>Data de Admissao</strong> — formato AAAA-MM-DD (ex: 2010-02-01)
+                </li>
+                <li>
+                  <strong>Setor/Lotacao</strong> (ou Setor / Unidade)
+                </li>
+              </ul>
+              <p className="mb-1 mt-2 font-medium text-foreground">Colunas opcionais:</p>
+              <ul className="ml-4 list-disc space-y-0.5">
+                <li>Data de Nascimento</li>
+                <li>Cargo (ou Funcao)</li>
+              </ul>
+              <p className="mt-2">
+                Os dados devem estar na primeira aba. CPFs repetidos mantem a admissao mais antiga.
+              </p>
+            </div>
+          </div>
           <div className="space-y-2">
             <Label htmlFor="arquivo">Arquivo XLS ou XLSX</Label>
             <Input
@@ -258,23 +307,42 @@ export default function ImportacaoPage() {
       {etapa === 'normalizacao' && (
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            Foram encontrados <strong>{setores.length}</strong> setores distintos. Defina as regras
-            de normalizacao:
+            Foram encontrados <strong>{setores.length}</strong> setores distintos na planilha.
+            Defina como eles serao organizados antes de gravar:
           </p>
+
+          <div className="rounded-lg border-l-4 border-blue-500 bg-blue-50/50 p-4 text-xs text-blue-700">
+            <p className="mb-1 font-medium">Como funciona:</p>
+            <ul className="ml-4 list-disc space-y-0.5">
+              <li>
+                Setores com <strong>menos servidores que o limite minimo</strong> sao agrupados
+                automaticamente no setor guarda-chuva (setores pequenos demais para ter votacao
+                propria).
+              </li>
+              <li>
+                Use o <strong>de-para</strong> abaixo para unificar grafias diferentes do mesmo
+                setor (ex: &quot;TI&quot; e &quot;Tecnologia da Informacao&quot; viram um so).
+              </li>
+            </ul>
+          </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label htmlFor="limiteMinimo">Limite minimo (abaixo disso vai p/ guarda-chuva)</Label>
+              <Label htmlFor="limiteMinimo">Limite minimo de servidores por setor</Label>
               <Input
                 id="limiteMinimo"
                 type="number"
-                min={2}
+                min={1}
                 value={regra.limiteMinimo}
-                onChange={e => setRegra({ ...regra, limiteMinimo: parseInt(e.target.value) || 3 })}
+                onChange={e => setRegra({ ...regra, limiteMinimo: parseInt(e.target.value) || 1 })}
               />
+              <p className="text-xs text-muted-foreground">
+                Setores com menos que isso vao para o guarda-chuva. Use <strong>1</strong> para
+                manter todos os setores separados.
+              </p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="nomeGuardaChuva">Nome do guarda-chuva</Label>
+              <Label htmlFor="nomeGuardaChuva">Nome do setor guarda-chuva</Label>
               <Input
                 id="nomeGuardaChuva"
                 type="text"
@@ -284,15 +352,17 @@ export default function ImportacaoPage() {
             </div>
           </div>
 
-          <details className="rounded-lg border border-border bg-card p-4">
+          <details className="rounded-lg border border-border bg-card p-4" open>
             <summary className="cursor-pointer text-sm font-medium">
               Agrupar setores manualmente (de-para)
             </summary>
             <div className="mt-2 max-h-64 overflow-y-auto space-y-2">
               {setores.map(s => (
                 <div key={s.nomeOriginal} className="flex items-center gap-2 text-xs">
-                  <span className="flex-1 truncate">{s.nomeOriginal}</span>
-                  <span className="text-muted-foreground">({s.totalServidores})</span>
+                  <span className="w-48 shrink-0 truncate font-medium" title={s.nomeOriginal}>
+                    {s.nomeOriginal}
+                  </span>
+                  <span className="shrink-0 text-muted-foreground">({s.totalServidores})</span>
                   <Input
                     type="text"
                     placeholder="Agrupar como..."

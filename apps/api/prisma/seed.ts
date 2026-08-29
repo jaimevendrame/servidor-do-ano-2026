@@ -64,6 +64,10 @@ async function seed(): Promise<void> {
     data: {
       id: EDICAO_ID,
       ano: 2026,
+      slug: 'servidordoano2026exemplo',
+      nomePrefeitura: 'Prefeitura Municipal de Exemplo',
+      cidade: 'Cidade Exemplo',
+      descricao: 'Votacao anual para eleger o servidor destaque de cada setor.',
       ativo: true,
     },
   });

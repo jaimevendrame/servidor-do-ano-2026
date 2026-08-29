@@ -8,6 +8,7 @@ import type { Eleitor } from './types';
 import { clearToken } from './api';
 
 const ELEITOR_KEY = 'sda:eleitor';
+const EDICAO_ELEITOR_KEY = 'sda:edicao-eleitor';
 
 /**
  * Salva os dados do eleitor apos login bem-sucedido.
@@ -15,6 +16,28 @@ const ELEITOR_KEY = 'sda:eleitor';
 export function setEleitor(eleitor: Eleitor): void {
   if (typeof window === 'undefined') return;
   window.localStorage.setItem(ELEITOR_KEY, JSON.stringify(eleitor));
+}
+
+/**
+ * Salva o contexto de edição do eleitor (edicaoId e slug).
+ */
+export function setEdicaoEleitor(edicaoId: number, slug: string): void {
+  if (typeof window === 'undefined') return;
+  window.localStorage.setItem(EDICAO_ELEITOR_KEY, JSON.stringify({ edicaoId, slug }));
+}
+
+/**
+ * Recupera o contexto de edição do eleitor.
+ */
+export function getEdicaoEleitor(): { edicaoId: number; slug: string } | null {
+  if (typeof window === 'undefined') return null;
+  const json = window.localStorage.getItem(EDICAO_ELEITOR_KEY);
+  if (!json) return null;
+  try {
+    return JSON.parse(json);
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -38,6 +61,7 @@ export function getEleitor(): Eleitor | null {
 export function clearSession(): void {
   if (typeof window === 'undefined') return;
   window.localStorage.removeItem(ELEITOR_KEY);
+  window.localStorage.removeItem(EDICAO_ELEITOR_KEY);
   clearVotoEscolhido();
   // Token ja eh limpo em api.ts interceptor, mas podemos chamar explicitamente
   clearToken();

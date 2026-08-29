@@ -1,38 +1,41 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { api, type ApiError } from '@/lib/api';
 import { getAdminToken } from '@/lib/session';
+import { useEdicao } from '@/lib/edicao-context';
 import type { ResultadoApuracao, ResultadoSetor } from '@/lib/types';
-
-const EDICAO_ID = 1;
 
 export default function ApuracaoPage() {
   const router = useRouter();
+  const { edicaoId } = useEdicao();
   const [resultado, setResultado] = useState<ResultadoApuracao | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const carregar = useCallback(async () => {
+    if (!edicaoId) return;
+
+    try {
+      const resp = await api.get<ResultadoApuracao>(`/admin/apuracao/${edicaoId}`);
+      setResultado(resp.data);
+    } catch (err) {
+      const apiErr = err as ApiError;
+      setErro(apiErr.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [edicaoId]);
 
   useEffect(() => {
     if (!getAdminToken()) {
       router.replace('/admin/login');
       return;
     }
-
-    (async () => {
-      try {
-        const resp = await api.get<ResultadoApuracao>(`/admin/apuracao/${EDICAO_ID}`);
-        setResultado(resp.data);
-      } catch (err) {
-        const apiErr = err as ApiError;
-        setErro(apiErr.message);
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, [router]);
+    carregar();
+  }, [router, carregar]);
 
   if (loading) {
     return (
@@ -47,7 +50,7 @@ export default function ApuracaoPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-primary">Apuracao</h1>
-          <p className="text-sm text-muted-foreground">Resultados por setor — Edicao {EDICAO_ID}</p>
+          <p className="text-sm text-muted-foreground">Resultados por setor — Eleição {edicaoId}</p>
         </div>
         <Button variant="outline" onClick={() => router.push('/admin')}>
           Voltar ao painel

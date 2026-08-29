@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { api, type ApiError } from '@/lib/api';
 import { getEleitor, getVotoEscolhido, clearVotoEscolhido, setVotoRegistrado } from '@/lib/session';
@@ -9,6 +9,8 @@ import type { Eleitor, VotoResult } from '@/lib/types';
 
 export default function ConfirmarVotoPage() {
   const router = useRouter();
+  const params = useParams();
+  const slug = params.slug as string;
   const [eleitor, setEleitor] = useState<Eleitor | null>(null);
   const [candidatoNome, setCandidatoNome] = useState<string | null>(null);
   const [erro, setErro] = useState<string | null>(null);
@@ -17,19 +19,19 @@ export default function ConfirmarVotoPage() {
   useEffect(() => {
     const dados = getEleitor();
     if (!dados) {
-      router.replace('/login');
+      router.replace(`/${slug}/login`);
       return;
     }
 
     const voto = getVotoEscolhido();
     if (!voto) {
-      router.replace('/cedula');
+      router.replace(`/${slug}/cedula`);
       return;
     }
 
     setEleitor(dados);
     setCandidatoNome(voto.nome);
-  }, [router]);
+  }, [router, slug]);
 
   if (!eleitor || !candidatoNome) {
     return null;
@@ -51,7 +53,7 @@ export default function ConfirmarVotoPage() {
       }
 
       clearVotoEscolhido();
-      router.push('/registrado');
+      router.push(`/${slug}/registrado`);
     } catch (err) {
       const apiErr = err as ApiError;
       setErro(apiErr.message);

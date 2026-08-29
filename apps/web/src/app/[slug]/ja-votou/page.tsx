@@ -1,15 +1,17 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { api, type ApiError } from '@/lib/api';
-import { getEleitor, clearSession, setVotoRegistrado } from '@/lib/session';
+import { getEleitor, getEdicaoEleitor, clearSession, setVotoRegistrado } from '@/lib/session';
 import { downloadComprovante } from '@/lib/download';
 import type { Eleitor, StatusParticipacao } from '@/lib/types';
 
 export default function JaVotouPage() {
   const router = useRouter();
+  const params = useParams();
+  const slug = params.slug as string;
   const [eleitor, setEleitor] = useState<Eleitor | null>(null);
   const [timestamp, setTimestamp] = useState<string | null>(null);
   const [carregando, setCarregando] = useState(true);
@@ -18,26 +20,26 @@ export default function JaVotouPage() {
 
   useEffect(() => {
     const dados = getEleitor();
-    if (!dados) {
-      router.replace('/login');
+    const edicaoCtx = getEdicaoEleitor();
+    if (!dados || !edicaoCtx) {
+      router.replace(`/${slug}/login`);
       return;
     }
     setEleitor(dados);
 
-    // Consultar status de participacao na API
     (async () => {
       try {
-        const response = await api.get<StatusParticipacao>(`/reentrada/${dados.id}?edicaoId=1`);
+        const response = await api.get<StatusParticipacao>(
+          `/reentrada/${dados.id}?edicaoId=${edicaoCtx.edicaoId}`
+        );
 
         if (!response.data.jaVotou) {
-          // Se nao votou ainda, redirecionar para cedula
-          router.replace('/cedula');
+          router.replace(`/${slug}/cedula`);
           return;
         }
 
         if (response.data.registradoEm) {
           setTimestamp(response.data.registradoEm);
-          // Persistir para que /registrado funcione
           setVotoRegistrado(
             typeof response.data.registradoEm === 'string'
               ? response.data.registradoEm
@@ -51,7 +53,7 @@ export default function JaVotouPage() {
         setCarregando(false);
       }
     })();
-  }, [router]);
+  }, [router, slug]);
 
   if (carregando) {
     return (
@@ -83,18 +85,10 @@ export default function JaVotouPage() {
 
   const dataObj = timestamp ? new Date(timestamp) : null;
   const dataFormatada = dataObj
-    ? dataObj.toLocaleDateString('pt-BR', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      })
+    ? dataObj.toLocaleDateString('pt-BR', { year: 'numeric', month: 'long', day: 'numeric' })
     : null;
   const horaFormatada = dataObj
-    ? dataObj.toLocaleTimeString('pt-BR', {
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-      })
+    ? dataObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
     : null;
 
   return (

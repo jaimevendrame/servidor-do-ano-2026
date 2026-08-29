@@ -14,9 +14,8 @@ import {
 } from '@/components/ui/dialog';
 import { api, type ApiError } from '@/lib/api';
 import { getAdminToken } from '@/lib/session';
+import { useEdicao } from '@/lib/edicao-context';
 import type { CandidatoDetalhado, SetorAdmin } from '@/lib/types';
-
-const EDICAO_ID = 1;
 
 interface FormState {
   id?: number;
@@ -30,6 +29,7 @@ const FORM_VAZIO: FormState = { nome: '', cargo: '', setorId: '', ordemExibicao:
 
 export default function CandidatosPage() {
   const router = useRouter();
+  const { edicaoId } = useEdicao();
   const [candidatos, setCandidatos] = useState<CandidatoDetalhado[]>([]);
   const [setores, setSetores] = useState<SetorAdmin[]>([]);
   const [loading, setLoading] = useState(true);
@@ -39,11 +39,13 @@ export default function CandidatosPage() {
   const [salvando, setSalvando] = useState(false);
 
   const carregar = useCallback(async () => {
+    if (!edicaoId) return;
+
     setLoading(true);
     try {
       const [candResp, setoresResp] = await Promise.all([
-        api.get<CandidatoDetalhado[]>(`/candidatos?edicaoId=${EDICAO_ID}`),
-        api.get<SetorAdmin[]>(`/setores?edicaoId=${EDICAO_ID}`),
+        api.get<CandidatoDetalhado[]>(`/candidatos?edicaoId=${edicaoId}`),
+        api.get<SetorAdmin[]>(`/setores?edicaoId=${edicaoId}`),
       ]);
       setCandidatos(candResp.data);
       setSetores(setoresResp.data);
@@ -53,7 +55,7 @@ export default function CandidatosPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [edicaoId]);
 
   useEffect(() => {
     if (!getAdminToken()) {
@@ -98,7 +100,7 @@ export default function CandidatosPage() {
         });
       } else {
         await api.post('/candidatos', {
-          edicaoId: EDICAO_ID,
+          edicaoId: edicaoId || 1,
           setorId: form.setorId,
           nome: form.nome,
           cargo: form.cargo || undefined,

@@ -56,7 +56,7 @@ describe('AuthService', () => {
     (prisma.eleitor.findFirst as jest.Mock).mockResolvedValue(eleitor);
 
     const resultado = await service.loginEleitor(
-      { cpf: '529.982.247-25', dataAdmissao: '2015-03-20' },
+      { cpf: '529.982.247-25', dataAdmissao: '2015-03-20', edicaoId: 1 },
       1
     );
 
@@ -70,7 +70,7 @@ describe('AuthService', () => {
 
     await expect(
       service.loginEleitor(
-        { cpf: '529.982.247-25', dataAdmissao: '2000-01-01' },
+        { cpf: '529.982.247-25', dataAdmissao: '2000-01-01', edicaoId: 1 },
         1
       )
     ).rejects.toThrow();
@@ -83,7 +83,7 @@ describe('AuthService', () => {
 
     await expect(
       service.loginEleitor(
-        { cpf: '529.982.247-25', dataAdmissao: '2015-03-20' },
+        { cpf: '529.982.247-25', dataAdmissao: '2015-03-20', edicaoId: 1 },
         1
       )
     ).rejects.toThrow(/bloqueado/);
