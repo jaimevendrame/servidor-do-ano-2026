@@ -133,15 +133,17 @@ model Voto {
 // Janela de votação
 // ──────────────────────────────────────────────
 model JanelaVotacao {
-  id            Int      @id @default(autoincrement())
-  edicaoId      Int      @unique
-  dataInicio    DateTime
-  dataFim       DateTime
-  timezone      String   @default("America/Sao_Paulo")
-  abertaManual  Boolean  @default(false)
-  fechadaManual Boolean  @default(false)
-  criadoEm      DateTime @default(now())
-  atualizadoEm  DateTime @updatedAt
+  id                    Int      @id @default(autoincrement())
+  edicaoId              Int      @unique
+  dataInicio            DateTime
+  dataFim               DateTime
+  timezone              String   @default("America/Sao_Paulo")
+  abertaManual          Boolean  @default(false)
+  fechadaManual         Boolean  @default(false)
+  aberturaAutoRegistrada  Boolean @default(false) // CRON marcou abertura automatica em log
+  fechamentoAutoRegistrado Boolean @default(false) // CRON marcou fechamento automatico em log
+  criadoEm              DateTime @default(now())
+  atualizadoEm          DateTime @updatedAt
 
   edicao Edicao @relation(fields: [edicaoId], references: [id])
 
