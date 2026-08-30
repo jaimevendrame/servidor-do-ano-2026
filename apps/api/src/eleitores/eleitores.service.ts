@@ -67,6 +67,7 @@ export class EleitorService {
         cpf: e.cpf,
         nome: e.nome,
         setorNome: e.setor.nomeExibido,
+        dataAdmissao: e.dataAdmissao,
         status: e.status,
         motivoBloqueio: e.motivoBloqueio,
         dataBloqueio: e.dataBloqueio,

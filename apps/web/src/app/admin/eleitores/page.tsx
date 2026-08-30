@@ -22,6 +22,7 @@ interface Eleitor {
   cpf: string;
   nome: string;
   setorNome: string;
+  dataAdmissao: string;
   status: 'ativo' | 'bloqueado';
   motivoBloqueio: string | null;
   dataBloqueio: string | null;
@@ -237,6 +238,7 @@ export default function EleitoresPage() {
                   <th className="px-4 py-3 text-left font-semibold">CPF</th>
                   <th className="px-4 py-3 text-left font-semibold">Nome</th>
                   <th className="px-4 py-3 text-left font-semibold">Setor</th>
+                  <th className="px-4 py-3 text-left font-semibold">Admissão</th>
                   <th className="px-4 py-3 text-left font-semibold">Status</th>
                   <th className="px-4 py-3 text-left font-semibold">Ações</th>
                 </tr>
@@ -244,7 +246,7 @@ export default function EleitoresPage() {
               <tbody>
                 {eleitores.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
+                    <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
                       Nenhum eleitor encontrado
                     </td>
                   </tr>
@@ -255,6 +257,11 @@ export default function EleitoresPage() {
                       <td className="px-4 py-3">{eleitor.nome}</td>
                       <td className="px-4 py-3 text-sm text-muted-foreground">
                         {eleitor.setorNome}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-muted-foreground">
+                        {new Date(eleitor.dataAdmissao).toLocaleDateString('pt-BR', {
+                          timeZone: 'UTC',
+                        })}
                       </td>
                       <td className="px-4 py-3">
                         <span
