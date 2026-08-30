@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Alert } from '@/components/ui/alert';
 import { api, type ApiError } from '@/lib/api';
 import { getEleitor, getVotoEscolhido, clearVotoEscolhido, setVotoRegistrado } from '@/lib/session';
 import type { Eleitor, VotoResult } from '@/lib/types';
@@ -69,7 +71,7 @@ export default function ConfirmarVotoPage() {
     <div className="mx-auto w-full max-w-2xl space-y-6 py-12">
       <div className="space-y-4">
         <div className="space-y-2 text-center">
-          <h1 className="text-2xl font-semibold text-primary">Confirme seu voto</h1>
+          <h1 className="font-heading text-2xl text-primary">Confirme seu voto</h1>
           <p className="text-sm text-muted-foreground">Revise antes de confirmar</p>
         </div>
 
@@ -78,20 +80,19 @@ export default function ConfirmarVotoPage() {
           <p className="mt-2 text-2xl font-bold text-primary">{candidatoNome}</p>
         </div>
 
-        <div className="rounded-lg border-l-4 border-destructive bg-destructive/10 p-4">
-          <p className="text-sm font-semibold text-destructive">⚠ Atenção</p>
-          <p className="mt-2 text-sm text-destructive">
-            <strong>Esta ação é irreversível.</strong> Uma vez confirmado, seu voto não pode ser
-            alterado ou cancelado. Certifique-se de estar votando no candidato correto.
-          </p>
-        </div>
+        <Alert variant="error" className="flex items-start gap-3">
+          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" />
+          <div>
+            <p className="font-semibold">Atenção</p>
+            <p className="mt-1">
+              <strong>Esta ação é irreversível.</strong> Uma vez confirmado, seu voto não pode ser
+              alterado ou cancelado. Certifique-se de estar votando no candidato correto.
+            </p>
+          </div>
+        </Alert>
       </div>
 
-      {erro && (
-        <div className="rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
-          {erro}
-        </div>
-      )}
+      {erro && <Alert variant="error">{erro}</Alert>}
 
       <div className="flex flex-col gap-3">
         <Button onClick={handleConfirmar} disabled={confirmando} size="lg" className="w-full">

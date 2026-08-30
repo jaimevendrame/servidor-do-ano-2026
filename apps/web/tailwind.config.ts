@@ -9,10 +9,15 @@ const config: Config = {
       center: true,
       padding: '1rem',
       screens: {
-        '2xl': '1024px',
+        '2xl': '1200px',
       },
     },
     extend: {
+      fontFamily: {
+        heading: ['var(--font-oswald)', 'Oswald', 'sans-serif'],
+        body: ['var(--font-inter)', 'Inter', 'sans-serif'],
+        sans: ['var(--font-inter)', 'Inter', 'sans-serif'],
+      },
       colors: {
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
@@ -31,6 +36,18 @@ const config: Config = {
           DEFAULT: 'hsl(var(--destructive))',
           foreground: 'hsl(var(--destructive-foreground))',
         },
+        success: {
+          DEFAULT: 'hsl(var(--success))',
+          foreground: 'hsl(0 0% 100%)',
+        },
+        warning: {
+          DEFAULT: 'hsl(var(--warning))',
+          foreground: 'hsl(0 0% 100%)',
+        },
+        award: {
+          DEFAULT: 'hsl(var(--award))',
+          foreground: 'hsl(0 0% 100%)',
+        },
         muted: {
           DEFAULT: 'hsl(var(--muted))',
           foreground: 'hsl(var(--muted-foreground))',
@@ -45,9 +62,14 @@ const config: Config = {
         },
       },
       borderRadius: {
+        xl: '24px',
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',
+      },
+      boxShadow: {
+        sm: 'var(--shadow-sm)',
+        md: 'var(--shadow-md)',
       },
     },
   },

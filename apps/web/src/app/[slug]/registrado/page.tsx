@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { CheckCircle2, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Alert } from '@/components/ui/alert';
 import { getEleitor, getVotoRegistrado, clearSession } from '@/lib/session';
 import { downloadComprovante } from '@/lib/download';
 import type { Eleitor } from '@/lib/types';
@@ -68,20 +70,17 @@ export default function RegistradoPage() {
   return (
     <div className="mx-auto w-full max-w-2xl space-y-6 py-12">
       <div className="space-y-4">
-        <div className="rounded-lg border border-green-200/50 bg-green-50/50 p-6">
-          <div className="space-y-3">
-            <div className="text-center">
-              <div className="mb-3 text-4xl">✓</div>
-              <h1 className="text-2xl font-semibold text-green-700">Voto registrado!</h1>
-            </div>
-
-            <p className="text-center text-sm text-green-600">
-              Sua participacao foi confirmada. Um comprovante foi gerado para sua referencia.
+        <div className="rounded-lg border border-success/30 bg-success/5 p-6 shadow-sm">
+          <div className="space-y-3 text-center">
+            <CheckCircle2 className="mx-auto h-12 w-12 text-success" />
+            <h1 className="font-heading text-2xl text-success">Voto registrado!</h1>
+            <p className="text-sm text-success/90">
+              Sua participação foi confirmada. Um comprovante foi gerado para sua referência.
             </p>
           </div>
         </div>
 
-        <div className="rounded-lg border border-border bg-card p-6 text-center">
+        <div className="rounded-lg border border-border bg-card p-6 text-center shadow-sm">
           <p className="text-sm text-muted-foreground">Data e hora do registro:</p>
           <p className="mt-2 text-lg font-semibold text-foreground">
             {dataFormatada} às {horaFormatada}
@@ -98,27 +97,22 @@ export default function RegistradoPage() {
         </div>
       </div>
 
-      {erro && (
-        <div className="rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
-          {erro}
-        </div>
-      )}
+      {erro && <Alert variant="error">{erro}</Alert>}
 
       <div className="flex flex-col gap-3">
         <Button onClick={handleBaixarComprovante} disabled={baixando} size="lg" className="w-full">
-          {baixando ? 'Baixando...' : '📥 Baixar comprovante em PDF'}
+          <Download className="h-5 w-5" />
+          {baixando ? 'Baixando...' : 'Baixar comprovante em PDF'}
         </Button>
         <Button onClick={handleVoltar} variant="outline" size="lg" className="w-full">
           Voltar ao início
         </Button>
       </div>
 
-      <div className="rounded-lg border border-blue-200/50 bg-blue-50/50 p-4 text-center text-xs text-blue-700">
-        <p>
-          <strong>Nota:</strong> O comprovante contém um código de verificação. Ele pode ser
-          validado no painel administrativo após a apuração dos resultados.
-        </p>
-      </div>
+      <Alert variant="info" className="text-center text-xs">
+        <strong>Nota:</strong> O comprovante contém um código de verificação. Ele pode ser validado
+        no painel administrativo após a apuração dos resultados.
+      </Alert>
     </div>
   );
 }

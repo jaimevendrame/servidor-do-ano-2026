@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { Alert } from '@/components/ui/alert';
 import {
   Dialog,
   DialogContent,
@@ -169,11 +171,7 @@ export default function EleitoresPage() {
         </p>
       </div>
 
-      {erro && (
-        <div className="rounded-lg border border-red-500 bg-red-50/50 p-4 text-sm text-red-700">
-          {erro}
-        </div>
-      )}
+      {erro && <Alert variant="error">{erro}</Alert>}
 
       {/* Filtros */}
       <form onSubmit={handleBuscar} className="space-y-4 rounded-lg border p-4">
@@ -264,15 +262,9 @@ export default function EleitoresPage() {
                         })}
                       </td>
                       <td className="px-4 py-3">
-                        <span
-                          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                            eleitor.status === 'ativo'
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-red-100 text-red-800'
-                          }`}
-                        >
-                          {eleitor.status === 'ativo' ? '🟢 Ativo' : '🔴 Bloqueado'}
-                        </span>
+                        <Badge variant={eleitor.status === 'ativo' ? 'success' : 'error'}>
+                          {eleitor.status === 'ativo' ? 'Ativo' : 'Bloqueado'}
+                        </Badge>
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex gap-2">
