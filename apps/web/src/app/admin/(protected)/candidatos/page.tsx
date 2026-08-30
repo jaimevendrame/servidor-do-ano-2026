@@ -1,10 +1,11 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Alert } from '@/components/ui/alert';
+import { AdminSkeleton } from '@/components/admin/admin-skeleton';
 import {
   Dialog,
   DialogContent,
@@ -13,7 +14,6 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { api, type ApiError } from '@/lib/api';
-import { getAdminToken } from '@/lib/session';
 import { useEdicao } from '@/lib/edicao-context';
 import type { CandidatoDetalhado, SetorAdmin } from '@/lib/types';
 
@@ -28,7 +28,6 @@ interface FormState {
 const FORM_VAZIO: FormState = { nome: '', cargo: '', setorId: '', ordemExibicao: 0 };
 
 export default function CandidatosPage() {
-  const router = useRouter();
   const { edicaoId } = useEdicao();
   const [candidatos, setCandidatos] = useState<CandidatoDetalhado[]>([]);
   const [setores, setSetores] = useState<SetorAdmin[]>([]);
@@ -58,12 +57,8 @@ export default function CandidatosPage() {
   }, [edicaoId]);
 
   useEffect(() => {
-    if (!getAdminToken()) {
-      router.replace('/admin/login');
-      return;
-    }
     carregar();
-  }, [router, carregar]);
+  }, [carregar]);
 
   const abrirNovo = () => {
     setForm(FORM_VAZIO);
@@ -137,23 +132,15 @@ export default function CandidatosPage() {
   }, {});
 
   return (
-    <div className="mx-auto w-full max-w-4xl space-y-6 py-12">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-primary">Candidatos</h1>
-          <p className="text-sm text-muted-foreground">Cadastro por setor e ordem de exibicao</p>
-        </div>
+    <div className="space-y-6">
+      <div className="flex items-center justify-end">
         <Button onClick={abrirNovo}>Novo candidato</Button>
       </div>
 
-      {erro && !dialogAberto && (
-        <div className="rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
-          {erro}
-        </div>
-      )}
+      {erro && !dialogAberto && <Alert variant="error">{erro}</Alert>}
 
       {loading ? (
-        <p className="text-muted-foreground">Carregando...</p>
+        <AdminSkeleton variant="cards" />
       ) : candidatos.length === 0 ? (
         <div className="rounded-lg border border-border bg-card p-8 text-center text-muted-foreground">
           Nenhum candidato cadastrado ainda.
@@ -161,7 +148,7 @@ export default function CandidatosPage() {
       ) : (
         <div className="space-y-6">
           {Object.entries(porSetor).map(([setor, lista]) => (
-            <div key={setor} className="rounded-lg border border-border bg-card p-4">
+            <div key={setor} className="glass-panel p-4">
               <h2 className="mb-3 text-sm font-semibold text-primary">{setor}</h2>
               <div className="space-y-2">
                 {lista.map(c => (

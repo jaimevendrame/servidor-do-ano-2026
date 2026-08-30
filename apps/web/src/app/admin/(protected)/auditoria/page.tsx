@@ -1,12 +1,12 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Alert } from '@/components/ui/alert';
+import { AdminSkeleton } from '@/components/admin/admin-skeleton';
 import { api, type ApiError } from '@/lib/api';
-import { getAdminToken } from '@/lib/session';
 import type { LogEntry } from '@/lib/types';
 
 interface Filtros {
@@ -17,13 +17,11 @@ interface Filtros {
 }
 
 export default function AuditoriaPage() {
-  const router = useRouter();
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
   const [exportando, setExportando] = useState(false);
 
-  // Filtros
   const [ator, setAtor] = useState('');
   const [acao, setAcao] = useState('');
   const [de, setDe] = useState('');
@@ -54,12 +52,8 @@ export default function AuditoriaPage() {
   }, []);
 
   useEffect(() => {
-    if (!getAdminToken()) {
-      router.replace('/admin/login');
-      return;
-    }
     carregar({ ator: '', acao: '', de: '', ate: '' });
-  }, [router, carregar]);
+  }, [carregar]);
 
   const handleFiltrar = (e: React.FormEvent) => {
     e.preventDefault();
@@ -95,22 +89,8 @@ export default function AuditoriaPage() {
   };
 
   return (
-    <div className="mx-auto w-full max-w-4xl space-y-6 py-12">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-primary">Auditoria</h1>
-          <p className="text-sm text-muted-foreground">Logs de acoes administrativas</p>
-        </div>
-        <Button variant="outline" onClick={() => router.push('/admin')}>
-          Voltar ao painel
-        </Button>
-      </div>
-
-      {erro && (
-        <div className="rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
-          {erro}
-        </div>
-      )}
+    <div className="space-y-6">
+      {erro && <Alert variant="error">{erro}</Alert>}
 
       <form onSubmit={handleFiltrar} className="grid grid-cols-2 gap-3 md:grid-cols-5">
         <div className="space-y-1">
@@ -127,7 +107,7 @@ export default function AuditoriaPage() {
         </div>
         <div className="space-y-1">
           <Label htmlFor="acao" className="text-xs">
-            Acao
+            Ação
           </Label>
           <Input
             id="acao"
@@ -151,7 +131,7 @@ export default function AuditoriaPage() {
         </div>
         <div className="space-y-1">
           <Label htmlFor="ate" className="text-xs">
-            Ate
+            Até
           </Label>
           <Input
             id="ate"
@@ -179,7 +159,7 @@ export default function AuditoriaPage() {
       </form>
 
       {loading ? (
-        <p className="text-muted-foreground">Carregando logs...</p>
+        <AdminSkeleton variant="table" />
       ) : logs.length === 0 ? (
         <div className="rounded-lg border border-border bg-card p-8 text-center text-muted-foreground">
           Nenhum log encontrado.
@@ -192,13 +172,13 @@ export default function AuditoriaPage() {
                 <tr className="border-b">
                   <th className="p-2 text-left">Timestamp</th>
                   <th className="p-2 text-left">Ator</th>
-                  <th className="p-2 text-left">Acao</th>
+                  <th className="p-2 text-left">Ação</th>
                   <th className="p-2 text-left">Payload</th>
                 </tr>
               </thead>
               <tbody>
                 {logs.map(log => (
-                  <tr key={log.id} className="border-b last:border-0">
+                  <tr key={log.id} className="border-b last:border-0 hover:bg-muted/20">
                     <td className="whitespace-nowrap p-2 text-muted-foreground">
                       {new Date(log.timestamp).toLocaleString('pt-BR')}
                     </td>

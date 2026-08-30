@@ -1,14 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import Link from 'next/link';
 import { CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert } from '@/components/ui/alert';
 import { api, type ApiError } from '@/lib/api';
-import { getAdminToken } from '@/lib/session';
+
 import { uploadArquivo } from '@/lib/upload';
 import { useEdicao } from '@/lib/edicao-context';
 import type {
@@ -23,7 +23,6 @@ import type {
 type Etapa = 'upload' | 'validacao' | 'normalizacao' | 'confirmacao' | 'concluido';
 
 export default function ImportacaoPage() {
-  const router = useRouter();
   const { edicaoId } = useEdicao();
   const [etapa, setEtapa] = useState<Etapa>('upload');
   const [arquivo, setArquivo] = useState<File | null>(null);
@@ -41,12 +40,6 @@ export default function ImportacaoPage() {
   const [erro, setErro] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [confirmado, setConfirmado] = useState(false);
-
-  useEffect(() => {
-    if (!getAdminToken()) {
-      router.replace('/admin/login');
-    }
-  }, [router]);
 
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -149,13 +142,10 @@ export default function ImportacaoPage() {
   };
 
   return (
-    <div className="mx-auto w-full max-w-4xl space-y-6 py-12">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-semibold text-primary">Importacao de XLS</h1>
-        <p className="text-sm text-muted-foreground">
-          Etapa atual: <strong>{etapa}</strong>
-        </p>
-      </div>
+    <div className="space-y-6">
+      <p className="text-sm text-muted-foreground">
+        Etapa atual: <strong>{etapa}</strong>
+      </p>
 
       {erro && <Alert variant="error">{erro}</Alert>}
 
@@ -474,8 +464,8 @@ export default function ImportacaoPage() {
             </div>
           </div>
 
-          <Button onClick={() => router.push('/admin')} className="w-full">
-            Voltar ao painel
+          <Button asChild className="w-full">
+            <Link href="/admin">Voltar ao painel</Link>
           </Button>
         </div>
       )}

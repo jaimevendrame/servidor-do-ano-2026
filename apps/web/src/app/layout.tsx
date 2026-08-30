@@ -1,7 +1,5 @@
 import type { Metadata } from 'next';
 import { Inter, Oswald } from 'next/font/google';
-import { Header } from '@/components/header';
-import { Footer } from '@/components/footer';
 import { EdicaoProvider } from '@/lib/edicao-context';
 import { ThemeProvider, themeInitScript } from '@/lib/theme-context';
 import './globals.css';
@@ -36,11 +34,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="flex min-h-screen flex-col bg-background text-foreground">
         <ThemeProvider>
-          <EdicaoProvider>
-            <Header />
-            <main className="container flex-1 py-8">{children}</main>
-            <Footer />
-          </EdicaoProvider>
+          <EdicaoProvider>{children}</EdicaoProvider>
         </ThemeProvider>
       </body>
     </html>

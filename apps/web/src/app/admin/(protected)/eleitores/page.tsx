@@ -1,12 +1,12 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Alert } from '@/components/ui/alert';
+import { AdminSkeleton } from '@/components/admin/admin-skeleton';
 import {
   Dialog,
   DialogContent,
@@ -15,7 +15,6 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { api, type ApiError } from '@/lib/api';
-import { getAdminToken } from '@/lib/session';
 import { useEdicao } from '@/lib/edicao-context';
 import type { SetorAdmin } from '@/lib/types';
 
@@ -40,7 +39,6 @@ interface ListarResponse {
 }
 
 export default function EleitoresPage() {
-  const router = useRouter();
   const { edicaoId } = useEdicao();
   const [eleitores, setEleitores] = useState<Eleitor[]>([]);
   const [setores, setSetores] = useState<SetorAdmin[]>([]);
@@ -96,12 +94,8 @@ export default function EleitoresPage() {
   }, [edicaoId]);
 
   useEffect(() => {
-    if (!getAdminToken()) {
-      router.replace('/admin/login');
-      return;
-    }
     carregarSetores();
-  }, [router, carregarSetores]);
+  }, [carregarSetores]);
 
   useEffect(() => {
     carregar();
@@ -164,17 +158,10 @@ export default function EleitoresPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Gestão de Eleitores</h1>
-        <p className="text-muted-foreground mt-1">
-          Listar, bloquear e desbloquear eleitores por edição
-        </p>
-      </div>
-
       {erro && <Alert variant="error">{erro}</Alert>}
 
       {/* Filtros */}
-      <form onSubmit={handleBuscar} className="space-y-4 rounded-lg border p-4">
+      <form onSubmit={handleBuscar} className="glass-panel space-y-4 p-4">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <div>
             <Label htmlFor="busca">Buscar (CPF ou Nome)</Label>
@@ -226,10 +213,10 @@ export default function EleitoresPage() {
 
       {/* Tabela */}
       {loading ? (
-        <div className="text-center text-muted-foreground">Carregando...</div>
+        <AdminSkeleton variant="table" />
       ) : (
         <>
-          <div className="overflow-x-auto rounded-lg border">
+          <div className="overflow-x-auto rounded-lg border border-border bg-card">
             <table className="w-full text-sm">
               <thead className="border-b bg-muted">
                 <tr>

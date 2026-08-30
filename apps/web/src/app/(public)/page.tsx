@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
+import { BrandLogo } from '@/components/brand-logo';
 import { ArrowRight, ShieldCheck, Award } from 'lucide-react';
 import { api, type ApiError } from '@/lib/api';
 import { Badge } from '@/components/ui/badge';
@@ -46,14 +46,7 @@ export default function HomePage() {
     <div className="mx-auto w-full max-w-4xl space-y-12 py-8">
       {/* Hero premium */}
       <section className="flex flex-col items-center gap-6 rounded-xl border border-border bg-card px-6 py-12 text-center shadow-sm">
-        <Image
-          src="/logo-alfa.png"
-          alt="Servidor do Ano"
-          width={200}
-          height={110}
-          priority
-          className="h-24 w-auto"
-        />
+        <BrandLogo variant="stacked" priority className="h-28 sm:h-32" />
         <div className="space-y-3">
           <h1 className="font-heading text-primary">Servidor do Ano</h1>
           <p className="mx-auto max-w-xl text-base text-muted-foreground">

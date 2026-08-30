@@ -1,21 +1,14 @@
-import Image from 'next/image';
 import Link from 'next/link';
 import { EdicaoSelector } from './edicao-selector';
 import { ThemeToggle } from './theme-toggle';
+import { BrandLogo } from './brand-logo';
 
 export function Header() {
   return (
     <header className="border-b border-border bg-card">
       <div className="container flex items-center justify-between py-4">
         <Link href="/" className="flex items-center gap-2">
-          <Image
-            src="/logo-alfa.png"
-            alt="Servidor do Ano"
-            height={40}
-            width={134}
-            priority
-            className="h-10 w-auto"
-          />
+          <BrandLogo variant="line" priority className="h-9" />
         </Link>
         <nav className="flex items-center gap-4 text-sm">
           <EdicaoSelector />

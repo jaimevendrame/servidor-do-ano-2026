@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -14,8 +13,8 @@ import {
 } from '@/components/ui/dialog';
 import { Badge, type BadgeProps } from '@/components/ui/badge';
 import { Alert } from '@/components/ui/alert';
+import { AdminSkeleton } from '@/components/admin/admin-skeleton';
 import { api, type ApiError } from '@/lib/api';
-import { getAdminToken } from '@/lib/session';
 import { useEdicao } from '@/lib/edicao-context';
 import type { EdicaoAtiva, StatusVotacao } from '@/lib/types';
 
@@ -34,7 +33,6 @@ function toLocalDatetimeInput(iso: string): string {
 }
 
 export default function GerenciarEleicoesPage() {
-  const router = useRouter();
   const { edicaoId, setEdicaoId } = useEdicao();
   const [edicoes, setEdicoes] = useState<EdicaoAtiva[]>([]);
   const [loading, setLoading] = useState(true);
@@ -62,12 +60,8 @@ export default function GerenciarEleicoesPage() {
   }, []);
 
   useEffect(() => {
-    if (!getAdminToken()) {
-      router.replace('/admin/login');
-      return;
-    }
     carregar();
-  }, [router, carregar]);
+  }, [carregar]);
 
   const abrirModal = (edicao: EdicaoAtiva) => {
     setEdicaoSelecionada(edicao);
@@ -119,13 +113,6 @@ export default function GerenciarEleicoesPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Gerenciar Eleições</h1>
-        <p className="text-muted-foreground mt-1">
-          Configurar datas de início e fim da janela de votação
-        </p>
-      </div>
-
       <Alert variant="info" className="text-xs">
         <strong>CRON ativo:</strong> a janela abre/fecha automaticamente a cada minuto com base nas
         datas abaixo. Após o fechamento (dataFim atingido), a votação não reabre.
@@ -134,7 +121,7 @@ export default function GerenciarEleicoesPage() {
       {erro && <Alert variant="error">{erro}</Alert>}
 
       {loading ? (
-        <div className="text-center text-muted-foreground">Carregando...</div>
+        <AdminSkeleton variant="cards" />
       ) : (
         <div className="space-y-3">
           {edicoes.map(edicao => {

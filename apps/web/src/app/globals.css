@@ -52,6 +52,18 @@
     /* Shadows */
     --shadow-sm: 0 2px 8px rgba(27, 37, 39, 0.06);
     --shadow-md: 0 6px 20px rgba(27, 37, 39, 0.10);
+    --shadow-lg: 0 20px 40px rgba(27, 37, 39, 0.15);
+
+    /* Liquidglass — Light mode */
+    --glass-bg: rgba(255, 255, 255, 0.12);
+    --glass-bg-strong: rgba(255, 255, 255, 0.2);
+    --glass-border: rgba(255, 255, 255, 0.25);
+    --glass-highlight: rgba(255, 255, 255, 0.4);
+
+    /* Mesh gradients — Servidor do Ano palette */
+    --mesh-1: hsl(189 18% 13% / 0.08); /* grafite suave */
+    --mesh-2: hsl(36 43% 35% / 0.06); /* dourado suave */
+    --mesh-3: hsl(189 18% 13% / 0.04); /* grafite mais suave ainda */
   }
 
   .dark {
@@ -84,6 +96,17 @@
     --border: 189 18% 28%;
     --input: 189 18% 28%;
     --ring: 36 43% 50%; /* dourado focus ring */
+
+    /* Liquidglass — Dark mode (base grafite, borders mais claras) */
+    --glass-bg: rgba(27, 37, 39, 0.15);
+    --glass-bg-strong: rgba(27, 37, 39, 0.25);
+    --glass-border: rgba(129, 96, 51, 0.2); /* dourado translúcido */
+    --glass-highlight: rgba(247, 247, 245, 0.15);
+
+    /* Mesh gradients — Dark */
+    --mesh-1: hsl(36 43% 50% / 0.08); /* dourado clareado */
+    --mesh-2: hsl(189 18% 28% / 0.06); /* grafite claro */
+    --mesh-3: hsl(36 43% 50% / 0.04); /* dourado muito suave */
 
     color-scheme: dark;
   }
@@ -119,5 +142,96 @@
 
   h4 {
     @apply text-xl md:text-2xl;
+  }
+}
+
+@layer components {
+  /* Liquidglass — camada de vidro translúcido reutilizável.
+     Fallback sólido em @supports para navegadores sem backdrop-filter. */
+  .glass {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    box-shadow: inset 0 1px 0 var(--glass-highlight);
+    -webkit-backdrop-filter: blur(16px) saturate(150%);
+    backdrop-filter: blur(16px) saturate(150%);
+  }
+
+  .glass-strong {
+    background: var(--glass-bg-strong);
+    border: 1px solid var(--glass-border);
+    box-shadow: inset 0 1px 0 var(--glass-highlight);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    backdrop-filter: blur(20px) saturate(160%);
+  }
+
+  .glass-panel {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg), inset 0 1px 0 var(--glass-highlight);
+    -webkit-backdrop-filter: blur(16px) saturate(150%);
+    backdrop-filter: blur(16px) saturate(150%);
+  }
+
+  /* Fundo mesh do shell admin — fixo e leve, atrás de todo o conteúdo */
+  .admin-mesh {
+    position: relative;
+    background-color: hsl(var(--background));
+  }
+
+  .admin-mesh::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-image:
+      radial-gradient(60rem 60rem at 12% 8%, var(--mesh-1), transparent 55%),
+      radial-gradient(50rem 50rem at 88% 20%, var(--mesh-2), transparent 50%),
+      radial-gradient(45rem 45rem at 70% 95%, var(--mesh-3), transparent 55%);
+  }
+
+  /* Shimmer para skeleton states */
+  .glass-shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .glass-shimmer::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      var(--glass-highlight),
+      transparent
+    );
+    animation: glass-shimmer 1.6s ease-in-out infinite;
+  }
+
+  @keyframes glass-shimmer {
+    100% {
+      transform: translateX(100%);
+    }
+  }
+}
+
+/* A11y: sem animação para quem pede reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .glass-shimmer::after {
+    animation: none;
+  }
+}
+
+/* Fallback: navegadores sem backdrop-filter (Safari antigo, etc.)
+   caem para superfície sólida — legibilidade acima do efeito. */
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .glass,
+  .glass-strong,
+  .glass-panel {
+    background: hsl(var(--card));
+    border-color: hsl(var(--border));
   }
 }

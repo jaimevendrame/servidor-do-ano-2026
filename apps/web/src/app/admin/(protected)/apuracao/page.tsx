@@ -1,19 +1,16 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
 import { Trophy } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Alert } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
+import { AdminSkeleton } from '@/components/admin/admin-skeleton';
 import { api, type ApiError } from '@/lib/api';
-import { getAdminToken } from '@/lib/session';
 import { useEdicao } from '@/lib/edicao-context';
 import type { ResultadoApuracao, ResultadoSetor } from '@/lib/types';
 
 export default function ApuracaoPage() {
-  const router = useRouter();
   const { edicaoId } = useEdicao();
   const [resultado, setResultado] = useState<ResultadoApuracao | null>(null);
   const [erro, setErro] = useState<string | null>(null);
@@ -34,33 +31,15 @@ export default function ApuracaoPage() {
   }, [edicaoId]);
 
   useEffect(() => {
-    if (!getAdminToken()) {
-      router.replace('/admin/login');
-      return;
-    }
     carregar();
-  }, [router, carregar]);
+  }, [carregar]);
 
   if (loading) {
-    return (
-      <div className="mx-auto w-full max-w-4xl space-y-6 py-12 text-center">
-        <p className="text-muted-foreground">Carregando apuracao...</p>
-      </div>
-    );
+    return <AdminSkeleton variant="cards" />;
   }
 
   return (
-    <div className="mx-auto w-full max-w-4xl space-y-6 py-12">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-heading text-2xl text-primary">Apuração</h1>
-          <p className="text-sm text-muted-foreground">Resultados por setor — Eleição {edicaoId}</p>
-        </div>
-        <Button variant="outline" onClick={() => router.push('/admin')}>
-          Voltar ao painel
-        </Button>
-      </div>
-
+    <div className="space-y-6">
       {erro && <Alert variant="error">{erro}</Alert>}
 
       {resultado && !resultado.votacaoFechada && (
@@ -70,9 +49,9 @@ export default function ApuracaoPage() {
       )}
 
       {resultado && resultado.setores.length === 0 && (
-        <div className="rounded-lg border border-border bg-card p-8 text-center text-muted-foreground shadow-sm">
+        <Card className="p-8 text-center text-muted-foreground">
           Nenhum setor encontrado para apuração.
-        </div>
+        </Card>
       )}
 
       {resultado &&
