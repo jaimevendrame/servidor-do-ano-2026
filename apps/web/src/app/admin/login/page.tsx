@@ -2,9 +2,11 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Alert } from '@/components/ui/alert';
 import { api, type ApiError } from '@/lib/api';
 import { setAdminToken, clearAdminSession } from '@/lib/session';
 import type { LoginAdminDto, LoginAdminResponse } from '@/lib/types';
@@ -85,8 +87,11 @@ export default function AdminLoginPage() {
 
   return (
     <div className="mx-auto w-full max-w-sm space-y-6 py-12">
-      <div className="space-y-2 text-center">
-        <h1 className="text-2xl font-semibold text-primary">Painel administrativo</h1>
+      <div className="flex flex-col items-center space-y-3 text-center">
+        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
+          <ShieldCheck className="h-7 w-7 text-primary" />
+        </div>
+        <h1 className="font-heading text-2xl text-primary">Painel administrativo</h1>
         <p className="text-sm text-muted-foreground">
           {etapa === 'senha' ? 'Informe suas credenciais' : 'Codigo de autenticacao'}
         </p>
@@ -120,11 +125,7 @@ export default function AdminLoginPage() {
             />
           </div>
 
-          {erro && (
-            <div className="rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
-              {erro}
-            </div>
-          )}
+          {erro && <Alert variant="error">{erro}</Alert>}
 
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? 'Verificando...' : 'Entrar'}
@@ -132,12 +133,10 @@ export default function AdminLoginPage() {
         </form>
       ) : (
         <form onSubmit={handleSubmitTotp} className="space-y-4">
-          <div className="rounded-lg border border-blue-200/50 bg-blue-50/50 p-4 text-sm text-blue-700">
-            <p>
-              Sua conta requer autenticacao em dois fatores. Abra o aplicativo autenticador e
-              informe o codigo de 6 digitos.
-            </p>
-          </div>
+          <Alert variant="info">
+            Sua conta requer autenticacao em dois fatores. Abra o aplicativo autenticador e informe
+            o codigo de 6 digitos.
+          </Alert>
 
           <div className="space-y-2">
             <Label htmlFor="totp">Codigo TOTP</Label>
@@ -155,11 +154,7 @@ export default function AdminLoginPage() {
             />
           </div>
 
-          {erro && (
-            <div className="rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
-              {erro}
-            </div>
-          )}
+          {erro && <Alert variant="error">{erro}</Alert>}
 
           <div className="flex flex-col gap-2">
             <Button type="submit" className="w-full" disabled={loading || totpCode.length !== 6}>

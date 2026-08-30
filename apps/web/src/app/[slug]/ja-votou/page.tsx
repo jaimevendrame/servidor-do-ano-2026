@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { Info, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Alert } from '@/components/ui/alert';
 import { api, type ApiError } from '@/lib/api';
 import { getEleitor, getEdicaoEleitor, clearSession, setVotoRegistrado } from '@/lib/session';
 import { downloadComprovante } from '@/lib/download';
@@ -94,11 +96,11 @@ export default function JaVotouPage() {
   return (
     <div className="mx-auto w-full max-w-2xl space-y-6 py-12">
       <div className="space-y-4">
-        <div className="rounded-lg border border-blue-200/50 bg-blue-50/50 p-6">
-          <div className="text-center">
-            <div className="mb-3 text-4xl">ℹ️</div>
-            <h1 className="text-2xl font-semibold text-blue-700">Você já votou</h1>
-            <p className="mt-3 text-sm text-blue-600">
+        <div className="rounded-lg border border-primary/20 bg-primary/5 p-6 shadow-sm">
+          <div className="space-y-3 text-center">
+            <Info className="mx-auto h-12 w-12 text-primary" />
+            <h1 className="font-heading text-2xl text-primary">Você já votou</h1>
+            <p className="text-sm text-muted-foreground">
               Sua participação nesta edição já foi registrada. Cada eleitor pode votar apenas uma
               vez.
             </p>
@@ -124,15 +126,12 @@ export default function JaVotouPage() {
         </div>
       </div>
 
-      {erro && (
-        <div className="rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
-          {erro}
-        </div>
-      )}
+      {erro && <Alert variant="error">{erro}</Alert>}
 
       <div className="flex flex-col gap-3">
         <Button onClick={handleBaixarComprovante} disabled={baixando} size="lg" className="w-full">
-          {baixando ? 'Baixando...' : '📥 Baixar comprovante'}
+          <Download className="h-5 w-5" />
+          {baixando ? 'Baixando...' : 'Baixar comprovante'}
         </Button>
         <Button onClick={handleVoltar} variant="outline" size="lg" className="w-full">
           Voltar ao início

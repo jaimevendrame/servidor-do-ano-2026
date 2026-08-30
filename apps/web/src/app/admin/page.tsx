@@ -4,6 +4,8 @@ import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Alert } from '@/components/ui/alert';
 import { api, type ApiError } from '@/lib/api';
 import { getAdminToken, clearAdminSession } from '@/lib/session';
 import { useEdicao } from '@/lib/edicao-context';
@@ -103,11 +105,7 @@ export default function AdminPage() {
         </Button>
       </div>
 
-      {erro && (
-        <div className="rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
-          {erro}
-        </div>
-      )}
+      {erro && <Alert variant="error">{erro}</Alert>}
 
       {painel && (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
@@ -134,21 +132,18 @@ export default function AdminPage() {
             <div>
               <p className="text-sm text-muted-foreground">Status da votacao</p>
               <p className="mt-1 text-lg font-semibold">
-                {janela.aberta ? (
-                  <span className="text-green-700">Aberta</span>
-                ) : (
-                  <span className="text-muted-foreground">Fechada</span>
-                )}
+                <Badge variant={janela.aberta ? 'success' : 'neutral'}>
+                  {janela.aberta ? 'ABERTA' : 'FECHADA'}
+                </Badge>
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
                 Janela: {new Date(janela.dataInicio).toLocaleString('pt-BR')} ate{' '}
                 {new Date(janela.dataFim).toLocaleString('pt-BR')}
               </p>
-              {janela.abertaManual && (
-                <p className="mt-1 text-xs text-amber-600">Abertura manual ativa</p>
-              )}
-              {janela.fechadaManual && (
-                <p className="mt-1 text-xs text-amber-600">Fechamento manual ativo</p>
+              {(janela.abertaManual || janela.fechadaManual) && (
+                <Badge variant="warning" className="mt-2">
+                  {janela.abertaManual ? 'Abertura manual' : 'Fechamento manual'}
+                </Badge>
               )}
             </div>
 
@@ -172,12 +167,10 @@ export default function AdminPage() {
         </div>
       )}
 
-      <div className="rounded-lg border-l-4 border-blue-500 bg-blue-50/50 p-4 text-xs text-blue-700">
-        <p>
-          <strong>Regra #1:</strong> durante a votacao, este painel exibe apenas o total de
-          participacao. Nenhuma parcial de votos, ranking ou nome de candidato eh revelado.
-        </p>
-      </div>
+      <Alert variant="info" className="text-xs">
+        <strong>Regra #1:</strong> durante a votacao, este painel exibe apenas o total de
+        participacao. Nenhuma parcial de votos, ranking ou nome de candidato eh revelado.
+      </Alert>
 
       <div>
         <h2 className="mb-3 text-lg font-semibold">Acoes administrativas</h2>

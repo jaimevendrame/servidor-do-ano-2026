@@ -2,7 +2,11 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { Trophy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Alert } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
 import { api, type ApiError } from '@/lib/api';
 import { getAdminToken } from '@/lib/session';
 import { useEdicao } from '@/lib/edicao-context';
@@ -49,7 +53,7 @@ export default function ApuracaoPage() {
     <div className="mx-auto w-full max-w-4xl space-y-6 py-12">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-primary">Apuracao</h1>
+          <h1 className="font-heading text-2xl text-primary">Apuração</h1>
           <p className="text-sm text-muted-foreground">Resultados por setor — Eleição {edicaoId}</p>
         </div>
         <Button variant="outline" onClick={() => router.push('/admin')}>
@@ -57,23 +61,17 @@ export default function ApuracaoPage() {
         </Button>
       </div>
 
-      {erro && (
-        <div className="rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
-          {erro}
-        </div>
-      )}
+      {erro && <Alert variant="error">{erro}</Alert>}
 
       {resultado && !resultado.votacaoFechada && (
-        <div className="rounded-lg border-l-4 border-amber-500 bg-amber-50/50 p-4 text-sm text-amber-700">
-          <p>
-            <strong>Votacao ainda aberta.</strong> A apuracao so esta disponivel apos o fechamento.
-          </p>
-        </div>
+        <Alert variant="warning">
+          <strong>Votação ainda aberta.</strong> A apuração só está disponível após o fechamento.
+        </Alert>
       )}
 
       {resultado && resultado.setores.length === 0 && (
-        <div className="rounded-lg border border-border bg-card p-8 text-center text-muted-foreground">
-          Nenhum setor encontrado para apuracao.
+        <div className="rounded-lg border border-border bg-card p-8 text-center text-muted-foreground shadow-sm">
+          Nenhum setor encontrado para apuração.
         </div>
       )}
 
@@ -82,30 +80,20 @@ export default function ApuracaoPage() {
           <SetorCard key={setor.setorId} setor={setor} />
         ))}
 
-      <div className="rounded-lg border-l-4 border-blue-500 bg-blue-50/50 p-4 text-xs text-blue-700">
-        <p>
-          <strong>Regra #8:</strong> empates NAO sao resolvidos pelo sistema. O sistema apenas
-          sinaliza. A resolucao cabe a comissao conforme regulamento.
-        </p>
-      </div>
+      <Alert variant="info" className="text-xs">
+        <strong>Regra #8:</strong> empates NÃO são resolvidos pelo sistema. O sistema apenas
+        sinaliza. A resolução cabe à comissão conforme regulamento.
+      </Alert>
     </div>
   );
 }
 
 function SetorCard({ setor }: { setor: ResultadoSetor }) {
   return (
-    <div
-      className={`rounded-lg border bg-card p-4 ${
-        setor.empate ? 'border-amber-300' : 'border-border'
-      }`}
-    >
+    <Card className={setor.empate ? 'border-warning/40' : undefined}>
       <div className="flex items-center justify-between">
-        <h2 className="text-base font-semibold text-primary">{setor.setorNome}</h2>
-        {setor.empate && (
-          <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-700">
-            EMPATE
-          </span>
-        )}
+        <h2 className="font-heading text-lg text-primary">{setor.setorNome}</h2>
+        {setor.empate && <Badge variant="warning">EMPATE</Badge>}
       </div>
 
       {setor.ranking.length === 0 ? (
@@ -122,16 +110,25 @@ function SetorCard({ setor }: { setor: ResultadoSetor }) {
                 key={c.candidatoId}
                 className={`flex items-center justify-between rounded-md px-3 py-2 text-sm ${
                   isVencedor
-                    ? 'bg-green-50 font-semibold text-green-700'
+                    ? 'bg-award/10 font-semibold text-award'
                     : isEmpatado
-                      ? 'bg-amber-50 font-semibold text-amber-700'
+                      ? 'bg-warning/10 font-semibold text-warning'
                       : 'text-foreground'
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <span className="w-6 text-center text-xs text-muted-foreground">{i + 1}º</span>
+                  {isVencedor ? (
+                    <Trophy className="h-4 w-4 shrink-0 text-award" />
+                  ) : (
+                    <span className="w-6 text-center text-xs text-muted-foreground">{i + 1}º</span>
+                  )}
                   <span>{c.nome}</span>
                   {c.cargo && <span className="text-xs text-muted-foreground">({c.cargo})</span>}
+                  {isVencedor && (
+                    <Badge variant="award" className="ml-1">
+                      VENCEDOR
+                    </Badge>
+                  )}
                 </div>
                 <span className="font-mono text-sm">
                   {c.votos} voto{c.votos !== 1 ? 's' : ''}
@@ -143,11 +140,11 @@ function SetorCard({ setor }: { setor: ResultadoSetor }) {
       )}
 
       {setor.empate && (
-        <div className="mt-3 rounded-md border border-amber-200/50 bg-amber-50/50 p-3 text-xs text-amber-700">
+        <Alert variant="warning" className="mt-3 text-xs">
           <strong>Empate detectado</strong> entre: {setor.empatados.map(e => e.nome).join(', ')} (
-          {setor.empatados[0]?.votos} votos cada). Resolucao conforme regulamento da comissao.
-        </div>
+          {setor.empatados[0]?.votos} votos cada). Resolução conforme regulamento da comissão.
+        </Alert>
       )}
-    </div>
+    </Card>
   );
 }

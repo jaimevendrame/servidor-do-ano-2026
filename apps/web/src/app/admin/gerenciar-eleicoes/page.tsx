@@ -12,10 +12,19 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
+import { Badge, type BadgeProps } from '@/components/ui/badge';
+import { Alert } from '@/components/ui/alert';
 import { api, type ApiError } from '@/lib/api';
 import { getAdminToken } from '@/lib/session';
 import { useEdicao } from '@/lib/edicao-context';
-import type { EdicaoAtiva } from '@/lib/types';
+import type { EdicaoAtiva, StatusVotacao } from '@/lib/types';
+
+const STATUS_BADGE: Record<StatusVotacao, { texto: string; variant: BadgeProps['variant'] }> = {
+  aberta: { texto: 'Aberta', variant: 'success' },
+  em_breve: { texto: 'Em breve', variant: 'warning' },
+  encerrada: { texto: 'Encerrada', variant: 'neutral' },
+  sem_janela: { texto: 'Sem janela', variant: 'neutral' },
+};
 
 function toLocalDatetimeInput(iso: string): string {
   // Converte ISO para formato YYYY-MM-DDTHH:MM esperado por <input type="datetime-local">
@@ -117,18 +126,12 @@ export default function GerenciarEleicoesPage() {
         </p>
       </div>
 
-      <div className="rounded-lg border-l-4 border-blue-500 bg-blue-50/50 p-4 text-xs text-blue-700">
-        <p>
-          <strong>CRON ativo:</strong> a janela abre/fecha automaticamente a cada minuto com base
-          nas datas abaixo. Após o fechamento (dataFim atingido), a votação não reabre.
-        </p>
-      </div>
+      <Alert variant="info" className="text-xs">
+        <strong>CRON ativo:</strong> a janela abre/fecha automaticamente a cada minuto com base nas
+        datas abaixo. Após o fechamento (dataFim atingido), a votação não reabre.
+      </Alert>
 
-      {erro && (
-        <div className="rounded-lg border border-red-500 bg-red-50/50 p-4 text-sm text-red-700">
-          {erro}
-        </div>
-      )}
+      {erro && <Alert variant="error">{erro}</Alert>}
 
       {loading ? (
         <div className="text-center text-muted-foreground">Carregando...</div>
@@ -176,22 +179,9 @@ export default function GerenciarEleicoesPage() {
                       </div>
                       <div>
                         <span className="text-muted-foreground">Status:</span>{' '}
-                        <span
-                          className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                            edicao.statusVotacao === 'aberta'
-                              ? 'bg-green-100 text-green-800'
-                              : edicao.statusVotacao === 'em_breve'
-                                ? 'bg-yellow-100 text-yellow-800'
-                                : edicao.statusVotacao === 'encerrada'
-                                  ? 'bg-gray-200 text-gray-700'
-                                  : 'bg-gray-100 text-gray-700'
-                          }`}
-                        >
-                          {edicao.statusVotacao === 'aberta' && '🟢 Aberta'}
-                          {edicao.statusVotacao === 'em_breve' && '🟡 Em breve'}
-                          {edicao.statusVotacao === 'encerrada' && '⚫ Encerrada'}
-                          {edicao.statusVotacao === 'sem_janela' && '⚪ Sem janela'}
-                        </span>
+                        <Badge variant={STATUS_BADGE[edicao.statusVotacao].variant}>
+                          {STATUS_BADGE[edicao.statusVotacao].texto}
+                        </Badge>
                       </div>
                     </div>
                   </div>
@@ -268,11 +258,11 @@ export default function GerenciarEleicoesPage() {
                 </select>
               </div>
 
-              <div className="rounded-md border border-yellow-300 bg-yellow-50 p-3 text-xs text-yellow-800">
+              <Alert variant="warning" className="text-xs">
                 <strong>Atenção:</strong> se a votação já estiver sob controle manual
                 (aberta/fechada manualmente), as datas não podem ser alteradas. Reative a janela
                 automática primeiro (botão &quot;Abrir/Fechar&quot; no painel).
-              </div>
+              </Alert>
 
               <DialogFooter>
                 <Button type="button" variant="outline" onClick={() => setModalAberto(false)}>

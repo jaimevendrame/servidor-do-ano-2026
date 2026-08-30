@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Alert } from '@/components/ui/alert';
 import { api, type ApiError } from '@/lib/api';
 import { getAdminToken } from '@/lib/session';
 import { uploadArquivo } from '@/lib/upload';
@@ -155,11 +157,7 @@ export default function ImportacaoPage() {
         </p>
       </div>
 
-      {erro && (
-        <div className="rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
-          {erro}
-        </div>
-      )}
+      {erro && <Alert variant="error">{erro}</Alert>}
 
       {etapa === 'upload' && (
         <form onSubmit={handleUpload} className="space-y-4">
@@ -247,17 +245,17 @@ export default function ImportacaoPage() {
       {etapa === 'validacao' && validacao && (
         <div className="space-y-4">
           <div className="grid grid-cols-3 gap-3">
-            <div className="rounded-lg border border-green-200 bg-green-50 p-4 text-center">
-              <p className="text-2xl font-bold text-green-700">{validacao.validas.length}</p>
-              <p className="text-xs text-green-600">Validas</p>
+            <div className="rounded-lg border border-success/30 bg-success/5 p-4 text-center">
+              <p className="text-2xl font-bold text-success">{validacao.validas.length}</p>
+              <p className="text-xs text-success/90">Validas</p>
             </div>
-            <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-center">
-              <p className="text-2xl font-bold text-red-700">{validacao.erros.length}</p>
-              <p className="text-xs text-red-600">Erros</p>
+            <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-center">
+              <p className="text-2xl font-bold text-destructive">{validacao.erros.length}</p>
+              <p className="text-xs text-destructive/90">Erros</p>
             </div>
-            <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-center">
-              <p className="text-2xl font-bold text-amber-700">{validacao.duplicados.length}</p>
-              <p className="text-xs text-amber-600">Duplicados</p>
+            <div className="rounded-lg border border-warning/30 bg-warning/5 p-4 text-center">
+              <p className="text-2xl font-bold text-warning">{validacao.duplicados.length}</p>
+              <p className="text-xs text-warning/90">Duplicados</p>
             </div>
           </div>
 
@@ -311,7 +309,7 @@ export default function ImportacaoPage() {
             Defina como eles serao organizados antes de gravar:
           </p>
 
-          <div className="rounded-lg border-l-4 border-blue-500 bg-blue-50/50 p-4 text-xs text-blue-700">
+          <Alert variant="info" className="text-xs">
             <p className="mb-1 font-medium">Como funciona:</p>
             <ul className="ml-4 list-disc space-y-0.5">
               <li>
@@ -324,7 +322,7 @@ export default function ImportacaoPage() {
                 setor (ex: &quot;TI&quot; e &quot;Tecnologia da Informacao&quot; viram um so).
               </li>
             </ul>
-          </div>
+          </Alert>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
@@ -420,7 +418,7 @@ export default function ImportacaoPage() {
             </div>
           </div>
 
-          <div className="rounded-lg border border-amber-200/50 bg-amber-50/50 p-4">
+          <Alert variant="warning">
             <label className="flex items-start gap-2 text-sm">
               <input
                 type="checkbox"
@@ -433,7 +431,7 @@ export default function ImportacaoPage() {
                 dados. Esta acao nao pode ser desfeita.
               </span>
             </label>
-          </div>
+          </Alert>
 
           <div className="flex gap-3">
             <Button
@@ -452,9 +450,9 @@ export default function ImportacaoPage() {
 
       {etapa === 'concluido' && resultado && (
         <div className="space-y-4">
-          <div className="rounded-lg border border-green-200/50 bg-green-50/50 p-6 text-center">
-            <div className="mb-3 text-4xl">✓</div>
-            <h2 className="text-xl font-semibold text-green-700">Importacao concluida!</h2>
+          <div className="rounded-lg border border-success/30 bg-success/5 p-6 text-center shadow-sm">
+            <CheckCircle2 className="mx-auto mb-3 h-10 w-10 text-success" />
+            <h2 className="font-heading text-xl text-success">Importacao concluida!</h2>
           </div>
 
           <div className="grid grid-cols-2 gap-3">

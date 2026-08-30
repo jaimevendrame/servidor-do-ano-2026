@@ -2,7 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Alert } from '@/components/ui/alert';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { api, type ApiError } from '@/lib/api';
 import { getEleitor, getEdicaoEleitor, setVotoEscolhido } from '@/lib/session';
 import type { Eleitor, Cedula, JanelaStatus, StatusParticipacao } from '@/lib/types';
@@ -116,9 +119,7 @@ export default function CedulaPage() {
   if (erro) {
     return (
       <div className="mx-auto w-full max-w-2xl space-y-6 py-12">
-        <div className="rounded-md border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">
-          {erro}
-        </div>
+        <Alert variant="error">{erro}</Alert>
         <Button onClick={() => router.back()} variant="outline" className="w-full">
           Voltar
         </Button>
@@ -131,33 +132,40 @@ export default function CedulaPage() {
   return (
     <div className="mx-auto w-full max-w-2xl space-y-6 py-12">
       <div className="space-y-2">
-        <h1 className="text-2xl font-semibold text-primary">Cedula de votacao</h1>
+        <h1 className="font-heading text-2xl text-primary">Cédula de votação</h1>
         <p className="text-sm text-muted-foreground">
-          Escolha o candidato do setor <strong>{eleitor.setor}</strong>
+          Escolha o candidato do setor <strong className="text-foreground">{eleitor.setor}</strong>
         </p>
         {tempoRestante && (
-          <p className="text-sm font-semibold text-destructive">Tempo restante: {tempoRestante}</p>
+          <div className="inline-flex items-center gap-2 rounded-md bg-destructive/10 px-3 py-1.5 text-sm font-semibold text-destructive">
+            <Clock className="h-4 w-4" />
+            Tempo restante: {tempoRestante}
+          </div>
         )}
       </div>
 
-      <div className="space-y-3">
-        {cedula.candidatos.map(candidato => (
-          <button
-            key={candidato.id}
-            onClick={() => setSelectedCandidatoId(candidato.id)}
-            className={`w-full rounded-lg border-2 p-4 text-left transition-all ${
-              selectedCandidatoId === candidato.id
-                ? 'border-primary bg-primary/5'
-                : 'border-border hover:border-primary/50'
-            }`}
-          >
-            <div className="flex items-start gap-4">
-              <div
-                className={`mt-1 h-5 w-5 flex-shrink-0 rounded-full border-2 ${
-                  selectedCandidatoId === candidato.id
-                    ? 'border-primary bg-primary'
-                    : 'border-border'
-                }`}
+      <RadioGroup
+        value={selectedCandidatoId ? String(selectedCandidatoId) : undefined}
+        onValueChange={value => setSelectedCandidatoId(Number(value))}
+        className="space-y-3"
+        aria-label="Candidatos do setor"
+      >
+        {cedula.candidatos.map(candidato => {
+          const selecionado = selectedCandidatoId === candidato.id;
+          return (
+            <label
+              key={candidato.id}
+              htmlFor={`candidato-${candidato.id}`}
+              className={`flex cursor-pointer items-start gap-4 rounded-lg border-2 p-4 shadow-sm transition-all ${
+                selecionado
+                  ? 'border-secondary bg-secondary/5'
+                  : 'border-border hover:border-secondary/50'
+              }`}
+            >
+              <RadioGroupItem
+                id={`candidato-${candidato.id}`}
+                value={String(candidato.id)}
+                className="mt-1"
               />
               <div>
                 <p className="font-semibold text-foreground">{candidato.nome}</p>
@@ -165,15 +173,16 @@ export default function CedulaPage() {
                   <p className="text-sm text-muted-foreground">{candidato.cargo}</p>
                 )}
               </div>
-            </div>
-          </button>
-        ))}
-      </div>
+            </label>
+          );
+        })}
+      </RadioGroup>
 
       <Button
         onClick={handleVotar}
         disabled={!selectedCandidatoId || votando}
         size="lg"
+        uppercase
         className="w-full"
       >
         {votando ? 'Prosseguindo...' : `Votar em ${candidatoSelecionado?.nome || 'candidato'}`}

@@ -2,17 +2,19 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
+import { ArrowRight, ShieldCheck, Award } from 'lucide-react';
 import { api, type ApiError } from '@/lib/api';
+import { Badge } from '@/components/ui/badge';
+import { Alert } from '@/components/ui/alert';
+import type { BadgeProps } from '@/components/ui/badge';
 import type { EdicaoAtiva, StatusVotacao } from '@/lib/types';
 
-const STATUS_LABEL: Record<StatusVotacao, { texto: string; classe: string }> = {
-  aberta: { texto: 'Votação aberta', classe: 'bg-green-100 text-green-700 border-green-200' },
-  em_breve: { texto: 'Em breve', classe: 'bg-amber-100 text-amber-700 border-amber-200' },
-  encerrada: { texto: 'Encerrada', classe: 'bg-muted text-muted-foreground border-border' },
-  sem_janela: {
-    texto: 'Aguardando definição',
-    classe: 'bg-muted text-muted-foreground border-border',
-  },
+const STATUS_LABEL: Record<StatusVotacao, { texto: string; variant: BadgeProps['variant'] }> = {
+  aberta: { texto: 'Votação aberta', variant: 'success' },
+  em_breve: { texto: 'Em breve', variant: 'warning' },
+  encerrada: { texto: 'Encerrada', variant: 'neutral' },
+  sem_janela: { texto: 'Aguardando definição', variant: 'neutral' },
 };
 
 function formatarVigencia(v: { dataInicio: string; dataFim: string } | null): string | null {
@@ -41,73 +43,99 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className="mx-auto w-full max-w-4xl space-y-8 py-12">
-      <div className="space-y-3 text-center">
-        <h1 className="text-3xl text-primary">Premiação Servidor do Ano</h1>
-        <p className="text-base text-muted-foreground">
-          Escolha a votação abaixo para participar. O sistema é anônimo, seguro e fiscalizado.
-        </p>
-      </div>
+    <div className="mx-auto w-full max-w-4xl space-y-12 py-8">
+      {/* Hero premium */}
+      <section className="flex flex-col items-center gap-6 rounded-xl border border-border bg-card px-6 py-12 text-center shadow-sm">
+        <Image
+          src="/logo-alfa.png"
+          alt="Servidor do Ano"
+          width={200}
+          height={110}
+          priority
+          className="h-24 w-auto"
+        />
+        <div className="space-y-3">
+          <h1 className="font-heading text-primary">Servidor do Ano</h1>
+          <p className="mx-auto max-w-xl text-base text-muted-foreground">
+            Reconhecendo quem faz a diferença todos os dias. Uma votação{' '}
+            <span className="font-medium text-foreground">anônima, segura e fiscalizada</span>.
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
+          <span className="inline-flex items-center gap-2">
+            <ShieldCheck className="h-4 w-4 text-secondary" />
+            Voto anônimo
+          </span>
+          <span className="inline-flex items-center gap-2">
+            <Award className="h-4 w-4 text-secondary" />
+            Reconhecimento institucional
+          </span>
+        </div>
+      </section>
 
       {loading && <p className="text-center text-muted-foreground">Carregando votações...</p>}
 
       {erro && (
-        <div className="rounded-md border border-destructive/50 bg-destructive/10 p-4 text-center text-sm text-destructive">
+        <Alert variant="error" className="text-center">
           {erro}
-        </div>
+        </Alert>
       )}
 
       {!loading && !erro && edicoes.length === 0 && (
-        <div className="rounded-lg border border-border bg-card p-8 text-center text-muted-foreground">
+        <div className="rounded-lg border border-border bg-card p-8 text-center text-muted-foreground shadow-sm">
           Nenhuma votação ativa no momento.
         </div>
       )}
 
       {!loading && edicoes.length > 0 && (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          {edicoes.map(e => {
-            const status = STATUS_LABEL[e.statusVotacao];
-            const vigencia = formatarVigencia(e.vigencia);
-            return (
-              <Link
-                key={e.id}
-                href={`/${e.slug}/login`}
-                className="flex flex-col gap-3 rounded-lg border border-border bg-card p-6 transition hover:border-primary hover:shadow-md"
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <p className="text-lg font-semibold text-primary">{e.nomePrefeitura}</p>
-                    {e.cidade && <p className="text-sm text-muted-foreground">{e.cidade}</p>}
+        <div className="space-y-4">
+          <h2 className="text-center font-heading text-2xl text-primary">Votações disponíveis</h2>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            {edicoes.map(e => {
+              const status = STATUS_LABEL[e.statusVotacao];
+              const vigencia = formatarVigencia(e.vigencia);
+              return (
+                <Link
+                  key={e.id}
+                  href={`/${e.slug}/login`}
+                  className="group flex flex-col gap-3 rounded-lg border border-border bg-card p-6 shadow-sm transition hover:border-secondary hover:shadow-md"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <p className="text-lg font-semibold text-primary">{e.nomePrefeitura}</p>
+                      {e.cidade && <p className="text-sm text-muted-foreground">{e.cidade}</p>}
+                    </div>
+                    <Badge variant={status.variant} className="shrink-0">
+                      {status.texto}
+                    </Badge>
                   </div>
-                  <span
-                    className={`shrink-0 rounded-full border px-2 py-0.5 text-xs ${status.classe}`}
-                  >
-                    {status.texto}
+
+                  <p className="text-sm font-medium text-foreground">Servidor do Ano {e.ano}</p>
+
+                  {e.descricao && <p className="text-sm text-muted-foreground">{e.descricao}</p>}
+
+                  {vigencia && (
+                    <p className="text-xs text-muted-foreground">Período de votação: {vigencia}</p>
+                  )}
+
+                  <span className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-secondary">
+                    Entrar para votar
+                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                   </span>
-                </div>
-
-                <p className="text-sm font-medium text-foreground">Servidor do Ano {e.ano}</p>
-
-                {e.descricao && <p className="text-sm text-muted-foreground">{e.descricao}</p>}
-
-                {vigencia && (
-                  <p className="text-xs text-muted-foreground">Período de votação: {vigencia}</p>
-                )}
-
-                <span className="mt-2 text-sm font-medium text-primary">Entrar para votar →</span>
-              </Link>
-            );
-          })}
+                </Link>
+              );
+            })}
+          </div>
         </div>
       )}
 
-      <div className="rounded-lg border-l-4 border-blue-500 bg-blue-50/50 p-4 text-center text-xs text-blue-700">
+      <Alert variant="info" className="text-center">
         Para votar, você precisará do seu CPF e da data de admissão conforme registrado na
         prefeitura.
-      </div>
+      </Alert>
 
       <p className="text-center">
-        <Link href="/admin/login" className="text-sm text-muted-foreground hover:text-primary">
+        <Link href="/admin/login" className="text-sm text-muted-foreground hover:text-secondary">
           Acessar painel administrativo
         </Link>
       </p>

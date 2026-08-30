@@ -160,7 +160,11 @@ export function EdicaoSelector() {
               />
             </div>
 
-            {erro && <div className="rounded-md bg-red-50 p-2 text-sm text-red-700">{erro}</div>}
+            {erro && (
+              <div className="rounded-md bg-destructive/10 p-2 text-sm text-destructive">
+                {erro}
+              </div>
+            )}
 
             <div className="flex gap-2">
               <Button
