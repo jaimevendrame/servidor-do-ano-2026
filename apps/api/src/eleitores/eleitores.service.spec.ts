@@ -50,6 +50,7 @@ describe('EleitorService', () => {
           id: 1,
           cpf: '12345678900',
           nome: 'Joao',
+          dataAdmissao: new Date('2020-01-15'),
           status: 'ativo',
           motivoBloqueio: null,
           dataBloqueio: null,
@@ -66,6 +67,7 @@ describe('EleitorService', () => {
       expect(resultado.total).toBe(1);
       expect(resultado.eleitores).toHaveLength(1);
       expect(resultado.eleitores[0].status).toBe('ativo');
+      expect(resultado.eleitores[0].dataAdmissao).toEqual(new Date('2020-01-15'));
     });
 
     it('deve rejeitar se edicaoId não informado', async () => {
