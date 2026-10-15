@@ -5,6 +5,8 @@ COPY apps/web/package*.json ./apps/web/
 RUN npm ci --workspace=@servidor-do-ano/web
 COPY apps/web ./apps/web
 COPY tsconfig.json ./
+ARG NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 RUN npm run build --workspace=@servidor-do-ano/web
 
 FROM node:20-alpine
