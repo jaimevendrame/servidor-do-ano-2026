@@ -33,9 +33,7 @@ export default function Error({
         </Button>
       </div>
 
-      {error.digest && (
-        <p className="text-xs text-muted-foreground">Erro ID: {error.digest}</p>
-      )}
+      {error.digest && <p className="text-xs text-muted-foreground">Erro ID: {error.digest}</p>}
     </div>
   );
 }
