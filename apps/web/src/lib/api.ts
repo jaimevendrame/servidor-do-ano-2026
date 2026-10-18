@@ -15,8 +15,9 @@ export class ApiError extends Error {
 
 function getBaseUrl(): string {
   const url = process.env.NEXT_PUBLIC_API_URL;
-  if (!url) {
-    throw new Error('NEXT_PUBLIC_API_URL nao definida. Copie .env.example para .env.local.');
+  // Se for vazio ou rota relativa, usa rota relativa /api direta (cenário de proxy/rewrite do Next.js)
+  if (!url || url === '/api') {
+    return '/api';
   }
   return `${url.replace(/\/$/, '')}/api`;
 }
