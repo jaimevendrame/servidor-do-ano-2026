@@ -5,6 +5,7 @@ services:
     build:
       context: ../..
       dockerfile: apps/api/Dockerfile
+    command: sh -c "npx prisma migrate deploy && node dist/main.js"
     environment:
       - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/servidor_do_ano
       - REDIS_URL=redis://redis:6379
