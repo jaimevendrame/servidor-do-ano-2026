@@ -47,12 +47,12 @@ export class ImportacaoController {
       },
     })
   )
-  upload(@UploadedFile() arquivo: Express.Multer.File) {
+  async upload(@UploadedFile() arquivo: Express.Multer.File) {
     if (!arquivo) {
       throw new BadRequestException('Nenhum arquivo enviado.');
     }
 
-    const resultado = this.importacaoService.parsear(arquivo.buffer);
+    const resultado = await this.importacaoService.parsear(arquivo.buffer);
 
     if (resultado.colunasFaltando.length > 0) {
       throw new BadRequestException(

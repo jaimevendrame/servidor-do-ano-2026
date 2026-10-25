@@ -14,8 +14,8 @@ import { LinhaValidada } from './validar-linhas';
 
 @Injectable()
 export class ImportacaoService {
-  parsear(buffer: Buffer): ResultadoParsing {
-    return parsearXls(buffer);
+  async parsear(buffer: Buffer): Promise<ResultadoParsing> {
+    return await parsearXls(buffer);
   }
 
   validar(linhas: ResultadoParsing): ResultadoValidacao {
