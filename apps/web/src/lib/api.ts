@@ -73,6 +73,9 @@ api.interceptors.request.use(config => {
     url.includes('/admin/') ||
     url.startsWith('/importacao') ||
     url.startsWith('importacao') ||
+    url.includes('/candidatos/modelo-planilha') ||
+    url.includes('/candidatos/upload-preview') ||
+    url.includes('/candidatos/importar') ||
     // mutações de recursos administrativos
     ((config.method === 'post' || config.method === 'put' || config.method === 'delete') &&
       (url.includes('/candidatos') || url.includes('/edicoes') || url.includes('/janela')));
