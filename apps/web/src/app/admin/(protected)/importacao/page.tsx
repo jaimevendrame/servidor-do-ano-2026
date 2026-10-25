@@ -277,6 +277,47 @@ export default function ImportacaoPage() {
             </details>
           )}
 
+          {validacao.duplicados.length > 0 && (
+            <details className="rounded-lg border border-warning/30 bg-card p-4" open>
+              <summary className="cursor-pointer text-sm font-medium text-warning flex items-center justify-between">
+                <span>Conferência de Registros Duplicados ({validacao.duplicados.length})</span>
+                <span className="text-xs text-muted-foreground font-normal">
+                  Regra: Mantém a admissão mais antiga
+                </span>
+              </summary>
+              <div className="mt-3 max-h-64 overflow-y-auto border border-border rounded">
+                <table className="w-full text-xs text-left">
+                  <thead className="bg-muted/80 sticky top-0 text-muted-foreground border-b border-border">
+                    <tr>
+                      <th className="p-2">Servidor</th>
+                      <th className="p-2">CPF</th>
+                      <th className="p-2">Setor</th>
+                      <th className="p-2 text-center text-success">Linha Mantida</th>
+                      <th className="p-2 text-center text-destructive">Linha Descartada</th>
+                      <th className="p-2">Critério Aplicado</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {validacao.duplicados.map((dup, i) => (
+                      <tr key={i} className="hover:bg-muted/30">
+                        <td className="p-2 font-medium text-foreground">{dup.nome}</td>
+                        <td className="p-2 font-mono text-muted-foreground">{dup.cpf}</td>
+                        <td className="p-2 text-muted-foreground">{dup.setor}</td>
+                        <td className="p-2 text-center text-success bg-success/5 font-mono">
+                          L{dup.linhaPreservada} ({dup.dataAdmissaoPreservada})
+                        </td>
+                        <td className="p-2 text-center text-destructive bg-destructive/5 font-mono line-through">
+                          L{dup.linhaRemovida} ({dup.dataAdmissaoRemovida})
+                        </td>
+                        <td className="p-2 text-muted-foreground text-[11px]">{dup.motivo}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </details>
+          )}
+
           <div className="flex gap-3">
             <Button
               onClick={handleProximaEtapa}

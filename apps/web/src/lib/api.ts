@@ -80,7 +80,10 @@ api.interceptors.request.use(config => {
     url.includes('upload-preview') ||
     // Mutações de recursos que exigem guard admin
     (['post', 'put', 'patch', 'delete'].includes(method) &&
-      (url.includes('candidatos') || url.includes('edicoes') || url.includes('janela') || url.includes('setores')));
+      (url.includes('candidatos') ||
+        url.includes('edicoes') ||
+        url.includes('janela') ||
+        url.includes('setores')));
 
   const adminToken =
     typeof window !== 'undefined' ? window.localStorage.getItem(ADMIN_TOKEN_KEY) : null;

@@ -107,10 +107,22 @@ export interface ErroLinha {
   motivo: string;
 }
 
+export interface DuplicadoDetalhe {
+  cpf: string;
+  nome: string;
+  setor: string;
+  cargo?: string;
+  linhaRemovida: number;
+  dataAdmissaoRemovida: string;
+  linhaPreservada: number;
+  dataAdmissaoPreservada: string;
+  motivo: string;
+}
+
 export interface ResultadoValidacao {
   validas: LinhaValidada[];
   erros: ErroLinha[];
-  duplicados: { cpf: string; linhaRemovida: number; linhaPreservada: number }[];
+  duplicados: DuplicadoDetalhe[];
 }
 
 export interface SetorDistinto {
