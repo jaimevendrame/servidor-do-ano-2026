@@ -88,7 +88,10 @@ api.interceptors.request.use(config => {
   const adminToken =
     typeof window !== 'undefined' ? window.localStorage.getItem(ADMIN_TOKEN_KEY) : null;
   const eleitorToken = getToken();
-  const token = isAdminRoute && adminToken ? adminToken : (adminToken ?? eleitorToken);
+  // Rota admin usa SEMPRE o token de admin. Nas demais, o token do eleitor tem
+  // precedencia: se o mesmo browser tiver ambos, o fluxo publico nao pode
+  // acabar enviando a identidade do admin no lugar do eleitor.
+  const token = isAdminRoute && adminToken ? adminToken : (eleitorToken ?? adminToken);
 
   if (token) {
     config.headers.set('Authorization', `Bearer ${token}`);
