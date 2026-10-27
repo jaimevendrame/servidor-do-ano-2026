@@ -17,7 +17,8 @@ import { api, type ApiError } from '@/lib/api';
 import { useEdicao } from '@/lib/edicao-context';
 import type { CandidatoDetalhado, SetorAdmin } from '@/lib/types';
 import { ImportarCandidatosDialog } from '@/components/admin/importar-candidatos-dialog';
-import { Plus, FileSpreadsheet } from 'lucide-react';
+import { LimparEnsaioDialog } from '@/components/admin/limpar-ensaio-dialog';
+import { Plus, FileSpreadsheet, Trash2 } from 'lucide-react';
 
 interface FormState {
   id?: number;
@@ -37,6 +38,7 @@ export default function CandidatosPage() {
   const [erro, setErro] = useState<string | null>(null);
   const [dialogAberto, setDialogAberto] = useState(false);
   const [dialogImportarAberto, setDialogImportarAberto] = useState(false);
+  const [dialogLimparAberto, setDialogLimparAberto] = useState(false);
   const [form, setForm] = useState<FormState>(FORM_VAZIO);
   const [salvando, setSalvando] = useState(false);
 
@@ -144,6 +146,14 @@ export default function CandidatosPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setDialogLimparAberto(true)}
+            className="flex items-center gap-2"
+          >
+            <Trash2 className="w-4 h-4" />
+            Limpar votos de ensaio
+          </Button>
           <Button
             variant="outline"
             onClick={() => setDialogImportarAberto(true)}
@@ -294,6 +304,15 @@ export default function CandidatosPage() {
           onOpenChange={setDialogImportarAberto}
           edicaoId={edicaoId}
           onImportadoSucesso={carregar}
+        />
+      )}
+
+      {edicaoId && (
+        <LimparEnsaioDialog
+          open={dialogLimparAberto}
+          onOpenChange={setDialogLimparAberto}
+          edicaoId={edicaoId}
+          onLimpo={carregar}
         />
       )}
     </div>

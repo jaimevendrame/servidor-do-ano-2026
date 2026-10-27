@@ -78,6 +78,7 @@ api.interceptors.request.use(config => {
     url.includes('auditoria') ||
     url.includes('modelo-planilha') ||
     url.includes('upload-preview') ||
+    url.includes('limpeza-ensaio') ||
     // GET /candidatos e GET /setores sao recursos administrativos (listagem
     // completa da edicao). O elector usa a cedula, que ja e escopada ao setor.
     (method === 'get' && (url.includes('candidatos') || url.includes('setores'))) ||
