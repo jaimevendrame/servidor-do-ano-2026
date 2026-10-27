@@ -8,6 +8,7 @@ import { RateLimitService } from './rate-limit.service';
 import { AdminService } from './admin.service';
 import { AdminController } from './admin.controller';
 import { AdminAuthGuard } from './admin-auth.guard';
+import { EleitorAuthGuard } from './eleitor-auth.guard';
 
 @Module({
   imports: [
@@ -17,8 +18,21 @@ import { AdminAuthGuard } from './admin-auth.guard';
       signOptions: { expiresIn: '30m' },
     }),
   ],
-  providers: [AuthService, RateLimitService, AdminService, AdminAuthGuard],
+  providers: [
+    AuthService,
+    RateLimitService,
+    AdminService,
+    AdminAuthGuard,
+    EleitorAuthGuard,
+  ],
   controllers: [AuthController, AdminController],
-  exports: [AuthService, RateLimitService, AdminService, AdminAuthGuard, JwtModule],
+  exports: [
+    AuthService,
+    RateLimitService,
+    AdminService,
+    AdminAuthGuard,
+    EleitorAuthGuard,
+    JwtModule,
+  ],
 })
 export class AuthModule {}

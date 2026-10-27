@@ -70,16 +70,19 @@ api.interceptors.request.use(config => {
   // O token admin tem precedência quando a URL é de recurso administrativo.
   const url = config.url ?? '';
   const method = (config.method ?? 'get').toLowerCase();
+  const isMutacao = ['post', 'put', 'patch', 'delete'].includes(method);
   const isAdminRoute =
     url.includes('/admin') ||
     url.includes('importacao') ||
-    url.includes('/eleitores') ||
-    url.includes('/apuracao') ||
-    url.includes('/auditoria') ||
+    url.includes('apuracao') ||
+    url.includes('auditoria') ||
     url.includes('modelo-planilha') ||
     url.includes('upload-preview') ||
+    // GET /candidatos e GET /setores sao recursos administrativos (listagem
+    // completa da edicao). O elector usa a cedula, que ja e escopada ao setor.
+    (method === 'get' && (url.includes('candidatos') || url.includes('setores'))) ||
     // Mutações de recursos que exigem guard admin
-    (['post', 'put', 'patch', 'delete'].includes(method) &&
+    (isMutacao &&
       (url.includes('candidatos') ||
         url.includes('edicoes') ||
         url.includes('janela') ||

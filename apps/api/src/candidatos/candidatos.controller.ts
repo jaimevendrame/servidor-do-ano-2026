@@ -37,7 +37,16 @@ export class CandidatosController {
     }
   }
 
+  /**
+   * GET /api/candidatos
+   *
+   * Exige AdminAuthGuard: a listagem completa expoe os candidatos de TODOS
+   * os setores da edicao. O elector nunca usa esta rota — a cedula e escopada
+   * ao setor via GET /api/cedula/:eleitorId.
+   * Ver issue #105.
+   */
   @Get()
+  @UseGuards(AdminAuthGuard)
   async listar(@Query('edicaoId') edicaoId: string, @Query('setorId') setorId?: string) {
     const eid = parseInt(edicaoId, 10);
     if (isNaN(eid)) throw new BadRequestException('edicaoId obrigatorio');
