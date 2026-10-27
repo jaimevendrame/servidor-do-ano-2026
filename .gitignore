@@ -16,3 +16,6 @@ uploads/
 # Artefatos locais (nunca versionar)
 docker-compose.override.yml
 graphify-out/
+
+# Pastas de trabalho temporario (podem conter CPF e dados de servidores)
+.tmp-*/
