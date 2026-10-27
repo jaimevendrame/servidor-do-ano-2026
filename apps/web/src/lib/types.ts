@@ -292,6 +292,8 @@ export interface Edicao {
   cidade: string | null;
   descricao: string | null;
   ativo: boolean;
+  /** Quando false, a edição não aparece na home pública. */
+  visivel: boolean;
   criadoEm: string; // ISO
 }
 

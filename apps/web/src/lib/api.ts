@@ -82,6 +82,9 @@ api.interceptors.request.use(config => {
     // GET /candidatos e GET /setores sao recursos administrativos (listagem
     // completa da edicao). O elector usa a cedula, que ja e escopada ao setor.
     (method === 'get' && (url.includes('candidatos') || url.includes('setores'))) ||
+    // GET /edicoes/admin/todas: lista todas as edicoes, inclusive as ocultas.
+    // Precisa do token de admin. (GET /edicoes/ativas continua publico.)
+    (method === 'get' && url.includes('/edicoes/admin/')) ||
     // Mutações de recursos que exigem guard admin
     (isMutacao &&
       (url.includes('candidatos') ||

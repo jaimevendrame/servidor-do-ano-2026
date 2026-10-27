@@ -34,6 +34,9 @@ describe('EdicaoService', () => {
               create: jest.fn(),
               update: jest.fn(),
             },
+            logAuditoria: {
+              create: jest.fn(),
+            },
           },
         },
       ],
@@ -91,7 +94,7 @@ describe('EdicaoService', () => {
       (prisma.edicao.findMany as jest.Mock).mockResolvedValue([
         {
           id: 1, ano: 2026, slug: 'servidordoano2026', nomePrefeitura: 'P', cidade: null,
-          descricao: null, ativo: true, criadoEm: new Date(),
+          descricao: null, ativo: true, visivel: true, criadoEm: new Date(),
           janela: {
             dataInicio: new Date(agora.getTime() - 60000),
             dataFim: new Date(agora.getTime() + 60000),
@@ -110,7 +113,7 @@ describe('EdicaoService', () => {
       (prisma.edicao.findMany as jest.Mock).mockResolvedValue([
         {
           id: 1, ano: 2027, slug: 's', nomePrefeitura: 'P', cidade: null,
-          descricao: null, ativo: true, criadoEm: new Date(),
+          descricao: null, ativo: true, visivel: true, criadoEm: new Date(),
           janela: {
             dataInicio: new Date(agora.getTime() + 86400000),
             dataFim: new Date(agora.getTime() + 172800000),
@@ -127,13 +130,83 @@ describe('EdicaoService', () => {
       (prisma.edicao.findMany as jest.Mock).mockResolvedValue([
         {
           id: 1, ano: 2028, slug: 's', nomePrefeitura: 'P', cidade: null,
-          descricao: null, ativo: true, criadoEm: new Date(), janela: null,
+          descricao: null, ativo: true, visivel: true, criadoEm: new Date(), janela: null,
         },
       ]);
 
       const r = await service.listarAtivas();
       expect(r[0].statusVotacao).toBe('sem_janela');
       expect(r[0].vigencia).toBeNull();
+    });
+
+    it('filtra APENAS as edicoes visiveis na home publica', async () => {
+      (prisma.edicao.findMany as jest.Mock).mockResolvedValue([]);
+
+      await service.listarAtivas();
+
+      expect(prisma.edicao.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { ativo: true, visivel: true },
+        })
+      );
+    });
+  });
+
+  describe('listarTodas', () => {
+    it('inclui as edicoes ocultas (admin precisa reexibi-las)', async () => {
+      (prisma.edicao.findMany as jest.Mock).mockResolvedValue([]);
+
+      await service.listarTodas();
+
+      expect(prisma.edicao.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { ativo: true },
+        })
+      );
+    });
+  });
+
+  describe('visibilidade', () => {
+    it('oculta a edicao da home (visivel=false)', async () => {
+      (prisma.edicao.update as jest.Mock).mockResolvedValue({
+        id: 1, ano: 2026, slug: 'servidordoano2026', nomePrefeitura: 'P',
+        cidade: null, descricao: null, ativo: true, visivel: false, criadoEm: new Date(),
+      });
+
+      const r = await service.definirVisibilidade(1, false, 'admin');
+
+      expect(r.visivel).toBe(false);
+      expect(prisma.edicao.update).toHaveBeenCalledWith({
+        where: { id: 1 },
+        data: { visivel: false },
+      });
+    });
+
+    it('mostra a edicao na home (visivel=true)', async () => {
+      (prisma.edicao.update as jest.Mock).mockResolvedValue({
+        id: 1, ano: 2026, slug: 'servidordoano2026', nomePrefeitura: 'P',
+        cidade: null, descricao: null, ativo: true, visivel: true, criadoEm: new Date(),
+      });
+
+      const r = await service.definirVisibilidade(1, true, 'admin');
+
+      expect(r.visivel).toBe(true);
+    });
+
+    it('registra a acao na auditoria', async () => {
+      (prisma.edicao.update as jest.Mock).mockResolvedValue({
+        id: 1, ano: 2026, slug: 'servidordoano2026', nomePrefeitura: 'P',
+        cidade: null, descricao: null, ativo: true, visivel: false, criadoEm: new Date(),
+      });
+
+      await service.definirVisibilidade(1, false, 'joao.admin');
+
+      expect(prisma.logAuditoria.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          ator: 'joao.admin',
+          acao: 'EDICAO_OCULTA',
+        }),
+      });
     });
   });
 

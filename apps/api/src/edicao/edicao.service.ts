@@ -10,6 +10,11 @@ export interface EdicaoDto {
   cidade: string | null;
   descricao: string | null;
   ativo: boolean;
+  /**
+   * Quando false, a edicao nao aparece na home publica (card de votacao).
+   * O acesso direto por /[slug]/login continua funcionando.
+   */
+  visivel: boolean;
   criadoEm: Date;
 }
 
@@ -41,7 +46,7 @@ export function gerarSlug(ano: number, cidade?: string): string {
   return `servidordoano${ano}${cidadeSlug}`;
 }
 
-function mapEdicao(e: { id: number; ano: number; slug: string; nomePrefeitura: string; cidade: string | null; descricao: string | null; ativo: boolean; criadoEm: Date }): EdicaoDto {
+function mapEdicao(e: { id: number; ano: number; slug: string; nomePrefeitura: string; cidade: string | null; descricao: string | null; ativo: boolean; visivel: boolean; criadoEm: Date }): EdicaoDto {
   return {
     id: e.id,
     ano: e.ano,
@@ -50,6 +55,7 @@ function mapEdicao(e: { id: number; ano: number; slug: string; nomePrefeitura: s
     cidade: e.cidade,
     descricao: e.descricao,
     ativo: e.ativo,
+    visivel: e.visivel,
     criadoEm: e.criadoEm,
   };
 }
@@ -99,15 +105,49 @@ export class EdicaoService {
   }
 
   /**
-   * Lista eleições ativas com vigência (para home pública).
+   * Lista eleições ativas COM vigência (para home pública).
+   *
+   * Filtra por visivel: edições ocultas nao aparecem como card na home.
+   * O acesso direto por /[slug]/login continua funcionando — quem tem o link
+   * chega na tela de login normalmente.
    */
   async listarAtivas(): Promise<EdicaoAtivaDto[]> {
+    const edicoes = await this.prisma.edicao.findMany({
+      where: { ativo: true, visivel: true },
+      orderBy: { ano: 'desc' },
+      include: { janela: true },
+    });
+
+    return this.mapComStatus(edicoes);
+  }
+
+  /**
+   * Lista TODAS as edições ativas, inclusive as ocultas na home.
+   * Usado pelo painel admin para poder reexibir uma edição oculta.
+   */
+  async listarTodas(): Promise<EdicaoAtivaDto[]> {
     const edicoes = await this.prisma.edicao.findMany({
       where: { ativo: true },
       orderBy: { ano: 'desc' },
       include: { janela: true },
     });
 
+    return this.mapComStatus(edicoes);
+  }
+
+  /**
+   * Calcula vigencia e statusVotacao de cada edição.
+   */
+  private mapComStatus(
+    edicoes: Array<{
+      id: number; ano: number; slug: string; nomePrefeitura: string;
+      cidade: string | null; descricao: string | null; ativo: boolean;
+      visivel: boolean; criadoEm: Date;
+      janela: {
+        dataInicio: Date; dataFim: Date; abertaManual: boolean; fechadaManual: boolean;
+      } | null;
+    }>
+  ): EdicaoAtivaDto[] {
     const agora = new Date();
 
     return edicoes.map(e => {
@@ -165,6 +205,29 @@ export class EdicaoService {
 
   async desativar(id: number): Promise<EdicaoDto> {
     const edicao = await this.prisma.edicao.update({ where: { id }, data: { ativo: false } });
+    return mapEdicao(edicao);
+  }
+
+  /**
+   * Alterna a visibilidade da edição na home pública.
+   *
+   * visivel=false: o card não aparece em GET /edicoes/ativas.
+   * O acesso direto por /[slug]/login continua funcionando.
+   */
+  async definirVisibilidade(id: number, visivel: boolean, ator: string): Promise<EdicaoDto> {
+    const edicao = await this.prisma.edicao.update({
+      where: { id },
+      data: { visivel },
+    });
+
+    await this.prisma.logAuditoria.create({
+      data: {
+        ator,
+        acao: visivel ? 'EDICAO_VISIVEL' : 'EDICAO_OCULTA',
+        payload: { edicaoId: id, slug: edicao.slug, visivel },
+      },
+    });
+
     return mapEdicao(edicao);
   }
 }
