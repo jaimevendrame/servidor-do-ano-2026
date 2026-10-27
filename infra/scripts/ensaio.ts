@@ -5,13 +5,22 @@
  * Simula: seed → abrir janela → votacao de 30 eleitores → fechar → apurar → expurgar.
  * Nenhum dado real de servidor.
  *
+ * ATENCAO: este script APAGA TODAS as tabelas (deleteMany sem filtro). E um
+ * ensaio para base local/isolada. NUNCA rodar contra a base de producao.
+ * Para limpar votos de ensaio em producao preservando a base de cadastro,
+ * use o endpoint POST /api/admin/edicoes/:id/limpeza-ensaio.
+ *
  * Uso: ts-node infra/scripts/ensaio.ts
- * Requer: DATABASE_URL configurado e migracao aplicada.
+ * Requer: DATABASE_URL configurado, migracao aplicada e
+ *         ENSAIO_DESTRUIR_TUDO=SIM (trava de seguranca).
  */
 import { PrismaClient } from '@prisma/client';
 import { faker } from '@faker-js/faker/locale/pt_BR';
 
 const prisma = new PrismaClient();
+
+/** Trava de seguranca: exige flag explicita para apagar tudo. */
+const PERMITE_DESTRUIR_TUDO = process.env.ENSAIO_DESTRUIR_TUDO === 'SIM';
 
 function gerarCPF(): string {
   const p1 = String(Math.floor(Math.random() * 1000)).padStart(3, '0');
@@ -31,7 +40,15 @@ async function ensaio(): Promise<void> {
   console.log('=== ENSAIO DE VOTACAO PONTA A PONTA ===\n');
 
   // 1. Limpar
-  console.log('1. Limpando banco...');
+  if (!PERMITE_DESTRUIR_TUDO) {
+    console.log('BLOQUEADO: este script apaga TODAS as tabelas.');
+    console.log('Para rodar, defina ENSAIO_DESTRUIR_TUDO=SIM (apenas em base isolada).');
+    console.log('Para limpar votos de ensaio em producao, use:');
+    console.log('  POST /api/admin/edicoes/:id/limpeza-ensaio');
+    await prisma.$disconnect();
+    process.exit(1);
+  }
+  console.log('1. Limpando banco (ATENCAO: apaga tudo)...');
   await prisma.participacao.deleteMany({});
   await prisma.voto.deleteMany({});
   await prisma.candidato.deleteMany({});
