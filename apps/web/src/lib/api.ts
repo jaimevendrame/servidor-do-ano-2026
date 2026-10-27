@@ -69,17 +69,28 @@ api.interceptors.request.use(config => {
   // Rotas admin exigem o token de admin; as demais usam o do eleitor.
   // O token admin tem precedência quando a URL é de recurso administrativo.
   const url = config.url ?? '';
+  const method = (config.method ?? 'get').toLowerCase();
   const isAdminRoute =
-    url.includes('/admin/') ||
-    url.startsWith('/importacao') ||
-    url.startsWith('importacao') ||
-    // mutações de recursos administrativos
-    ((config.method === 'post' || config.method === 'put' || config.method === 'delete') &&
-      (url.includes('/candidatos') || url.includes('/edicoes') || url.includes('/janela')));
+    url.includes('/admin') ||
+    url.includes('importacao') ||
+    url.includes('/eleitores') ||
+    url.includes('/apuracao') ||
+    url.includes('/auditoria') ||
+    url.includes('modelo-planilha') ||
+    url.includes('upload-preview') ||
+    // Mutações de recursos que exigem guard admin
+    (['post', 'put', 'patch', 'delete'].includes(method) &&
+      (url.includes('candidatos') ||
+        url.includes('edicoes') ||
+        url.includes('janela') ||
+        url.includes('setores')));
 
   const adminToken =
     typeof window !== 'undefined' ? window.localStorage.getItem(ADMIN_TOKEN_KEY) : null;
   const eleitorToken = getToken();
+  // Rota admin usa SEMPRE o token de admin. Nas demais, o token do eleitor tem
+  // precedencia: se o mesmo browser tiver ambos, o fluxo publico nao pode
+  // acabar enviando a identidade do admin no lugar do eleitor.
   const token = isAdminRoute && adminToken ? adminToken : (eleitorToken ?? adminToken);
 
   if (token) {

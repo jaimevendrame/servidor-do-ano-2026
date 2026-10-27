@@ -16,6 +16,8 @@ import {
 import { api, type ApiError } from '@/lib/api';
 import { useEdicao } from '@/lib/edicao-context';
 import type { CandidatoDetalhado, SetorAdmin } from '@/lib/types';
+import { ImportarCandidatosDialog } from '@/components/admin/importar-candidatos-dialog';
+import { Plus, FileSpreadsheet } from 'lucide-react';
 
 interface FormState {
   id?: number;
@@ -34,6 +36,7 @@ export default function CandidatosPage() {
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
   const [dialogAberto, setDialogAberto] = useState(false);
+  const [dialogImportarAberto, setDialogImportarAberto] = useState(false);
   const [form, setForm] = useState<FormState>(FORM_VAZIO);
   const [salvando, setSalvando] = useState(false);
 
@@ -133,8 +136,27 @@ export default function CandidatosPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-end">
-        <Button onClick={abrirNovo}>Novo candidato</Button>
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h1 className="text-xl font-bold text-foreground">Candidatos por Setor</h1>
+          <p className="text-sm text-muted-foreground">
+            Gerencie ou importe a lista de candidatos que receberão votos nesta edição.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setDialogImportarAberto(true)}
+            className="flex items-center gap-2"
+          >
+            <FileSpreadsheet className="w-4 h-4 text-accent" />
+            Importar Planilha
+          </Button>
+          <Button onClick={abrirNovo} className="flex items-center gap-2">
+            <Plus className="w-4 h-4" />
+            Novo Candidato
+          </Button>
+        </div>
       </div>
 
       {erro && !dialogAberto && <Alert variant="error">{erro}</Alert>}
@@ -265,6 +287,15 @@ export default function CandidatosPage() {
           </form>
         </DialogContent>
       </Dialog>
+
+      {edicaoId && (
+        <ImportarCandidatosDialog
+          open={dialogImportarAberto}
+          onOpenChange={setDialogImportarAberto}
+          edicaoId={edicaoId}
+          onImportadoSucesso={carregar}
+        />
+      )}
     </div>
   );
 }

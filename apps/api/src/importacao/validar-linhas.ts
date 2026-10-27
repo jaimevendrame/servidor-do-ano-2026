@@ -8,9 +8,21 @@ export interface ErroLinha {
   motivo: string;
 }
 
+export interface DuplicadoDetalhe {
+  cpf: string;
+  nome: string;
+  setor: string;
+  cargo?: string;
+  linhaRemovida: number;
+  dataAdmissaoRemovida: string;
+  linhaPreservada: number;
+  dataAdmissaoPreservada: string;
+  motivo: string;
+}
+
 export interface LinhaValidada {
   nome: string;
-  cpf: string; // limpo, 11 dÃ­gitos
+  cpf: string; // limpo, 11 dígitos
   dataNascimento: string | undefined;
   dataAdmissao: string;
   cargo: string | undefined;
@@ -21,7 +33,7 @@ export interface LinhaValidada {
 export interface ResultadoValidacao {
   validas: LinhaValidada[];
   erros: ErroLinha[];
-  duplicados: { cpf: string; linhaRemovida: number; linhaPreservada: number }[];
+  duplicados: DuplicadoDetalhe[];
 }
 
 /**
@@ -92,7 +104,7 @@ export function validarLinhas(linhas: LinhaXlsRaw[]): ResultadoValidacao {
   }
 
   // Passo 2: deduplicaÃ§Ã£o por CPF â€” mantÃ©m admissÃ£o mais antiga
-  const duplicados: ResultadoValidacao['duplicados'] = [];
+  const duplicados: DuplicadoDetalhe[] = [];
   const porCPF = new Map<string, LinhaValidada[]>();
 
   for (const v of validas) {
@@ -106,16 +118,24 @@ export function validarLinhas(linhas: LinhaXlsRaw[]): ResultadoValidacao {
     if (grupo.length === 1) {
       deduplicadas.push(grupo[0]);
     } else {
-      // Ordena por data admissÃ£o (mais antiga primeiro)
+      // Ordena por data admissão (mais antiga primeiro)
       grupo.sort(
         (a, b) => new Date(a.dataAdmissao).getTime() - new Date(b.dataAdmissao).getTime()
       );
-      deduplicadas.push(grupo[0]);
+      const preservada = grupo[0];
+      deduplicadas.push(preservada);
       for (let i = 1; i < grupo.length; i++) {
+        const descartada = grupo[i];
         duplicados.push({
           cpf,
-          linhaRemovida: grupo[i].linhaOriginal,
-          linhaPreservada: grupo[0].linhaOriginal,
+          nome: preservada.nome,
+          setor: preservada.setor,
+          cargo: preservada.cargo,
+          linhaRemovida: descartada.linhaOriginal,
+          dataAdmissaoRemovida: descartada.dataAdmissao,
+          linhaPreservada: preservada.linhaOriginal,
+          dataAdmissaoPreservada: preservada.dataAdmissao,
+          motivo: `Preservada linha ${preservada.linhaOriginal} por ter admissão mais antiga (${preservada.dataAdmissao} vs ${descartada.dataAdmissao})`,
         });
       }
     }
