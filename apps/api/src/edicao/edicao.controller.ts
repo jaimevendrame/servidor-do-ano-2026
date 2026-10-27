@@ -6,10 +6,12 @@ import {
   Put,
   Param,
   Body,
+  Req,
   UseGuards,
   BadRequestException,
   NotFoundException,
 } from '@nestjs/common';
+import { Request } from 'express';
 import { EdicaoService, CriarEdicaoDto, EdicaoDto, EdicaoAtivaDto } from './edicao.service';
 import { AdminAuthGuard } from '../auth/admin-auth.guard';
 
@@ -63,6 +65,24 @@ export class EdicaoController {
     } catch (error) {
       throw new BadRequestException(
         error instanceof Error ? error.message : 'Erro ao listar eleições ativas'
+      );
+    }
+  }
+
+  /**
+   * GET /api/edicoes/admin/todas
+   *
+   * Lista TODAS as edições, inclusive as ocultas na home pública.
+   * O painel admin precisa enxergar as ocultas para poder reexibi-las.
+   */
+  @Get('admin/todas')
+  @UseGuards(AdminAuthGuard)
+  async listarTodas(): Promise<EdicaoAtivaDto[]> {
+    try {
+      return await this.edicaoService.listarTodas();
+    } catch (error) {
+      throw new BadRequestException(
+        error instanceof Error ? error.message : 'Erro ao listar eleições'
       );
     }
   }
@@ -134,6 +154,38 @@ export class EdicaoController {
     } catch (error) {
       throw new BadRequestException(
         error instanceof Error ? error.message : 'Erro ao desativar eleição'
+      );
+    }
+  }
+
+  /**
+   * PUT /api/edicoes/:id/visibilidade
+   * Mostra ou oculta a edição na home pública.
+   *
+   * Body: { visivel: boolean }
+   * Quando visivel=false, o card da edição não aparece em /edicoes/ativas.
+   * O acesso direto por /[slug]/login continua funcionando.
+   */
+  @Put(':id/visibilidade')
+  @UseGuards(AdminAuthGuard)
+  async definirVisibilidade(
+    @Param('id') id: string,
+    @Body() body: { visivel?: boolean },
+    @Req() req: Request
+  ): Promise<EdicaoDto> {
+    const eid = parseInt(id);
+    if (isNaN(eid)) throw new BadRequestException('ID invalido');
+    if (typeof body.visivel !== 'boolean') {
+      throw new BadRequestException('Campo "visivel" (boolean) é obrigatório');
+    }
+
+    const ator = (req as Request & { adminUsername?: string }).adminUsername || 'admin';
+
+    try {
+      return await this.edicaoService.definirVisibilidade(eid, body.visivel, ator);
+    } catch (error) {
+      throw new BadRequestException(
+        error instanceof Error ? error.message : 'Erro ao alterar visibilidade'
       );
     }
   }

@@ -45,11 +45,42 @@ export default function GerenciarEleicoesPage() {
   const [dataFim, setDataFim] = useState('');
   const [timezone, setTimezone] = useState('America/Sao_Paulo');
   const [salvando, setSalvando] = useState(false);
+  const [trocandoVisibilidade, setTrocandoVisibilidade] = useState<number | null>(null);
+
+  /**
+   * Mostra ou oculta o card da votação na home pública.
+   * O acesso direto por /[slug]/login continua funcionando.
+   */
+  const handleAlternarVisibilidade = async (edicao: EdicaoAtiva) => {
+    const novoValor = !edicao.visivel;
+    const confirma = window.confirm(
+      novoValor
+        ? `Mostrar o card "${edicao.nomePrefeitura}" na página inicial?`
+        : `Ocultar o card "${edicao.nomePrefeitura}" da página inicial?\n\n` +
+            `Quem já tiver o endereço /${edicao.slug}/login continua conseguindo votar.`
+    );
+    if (!confirma) return;
+
+    setTrocandoVisibilidade(edicao.id);
+    setErro(null);
+    try {
+      await api.put(`/edicoes/${edicao.id}/visibilidade`, { visivel: novoValor });
+      await carregar();
+    } catch (err) {
+      const apiErr = err as ApiError;
+      setErro(apiErr.message);
+    } finally {
+      setTrocandoVisibilidade(null);
+    }
+  };
 
   const carregar = useCallback(async () => {
     setLoading(true);
     try {
-      const resp = await api.get<EdicaoAtiva[]>('/edicoes/ativas');
+      // Usa o endpoint admin que retorna TODAS as edições, inclusive as ocultas
+      // na home — caso contrário, ocultar uma edição a esconderia do próprio
+      // painel, impossibilitando reexibi-la.
+      const resp = await api.get<EdicaoAtiva[]>('/edicoes/admin/todas');
       setEdicoes(resp.data);
     } catch (err) {
       const apiErr = err as ApiError;
@@ -142,6 +173,7 @@ export default function GerenciarEleicoesPage() {
                           Ativa
                         </span>
                       )}
+                      {!edicao.visivel && <Badge variant="warning">Oculta na home</Badge>}
                     </div>
                     <p className="text-sm text-muted-foreground">
                       {edicao.cidade} · Ano {edicao.ano} · /{edicao.slug}/login
@@ -176,6 +208,23 @@ export default function GerenciarEleicoesPage() {
                   <div className="flex flex-col gap-2">
                     <Button size="sm" onClick={() => abrirModal(edicao)}>
                       Configurar Datas
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleAlternarVisibilidade(edicao)}
+                      disabled={trocandoVisibilidade === edicao.id}
+                      title={
+                        edicao.visivel
+                          ? 'Ocultar o card desta votação na página inicial'
+                          : 'Exibir o card desta votação na página inicial'
+                      }
+                    >
+                      {trocandoVisibilidade === edicao.id
+                        ? '...'
+                        : edicao.visivel
+                          ? 'Ocultar da home'
+                          : 'Mostrar na home'}
                     </Button>
                     {!isSelected && (
                       <Button size="sm" variant="outline" onClick={() => setEdicaoId(edicao.id)}>
