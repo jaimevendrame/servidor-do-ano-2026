@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { BrandLogo } from '@/components/brand-logo';
-import { ArrowRight, ShieldCheck, Award } from 'lucide-react';
+import { ArrowRight, Handshake } from 'lucide-react';
 import { api, type ApiError } from '@/lib/api';
 import { Badge } from '@/components/ui/badge';
 import { Alert } from '@/components/ui/alert';
@@ -44,26 +45,13 @@ export default function HomePage() {
 
   return (
     <div className="mx-auto w-full max-w-4xl space-y-12 py-8">
-      {/* Hero premium */}
-      <section className="flex flex-col items-center gap-6 rounded-xl border border-border bg-card px-6 py-12 text-center shadow-sm">
-        <BrandLogo variant="stacked" priority className="h-28 sm:h-32" />
-        <div className="space-y-3">
-          <h1 className="font-heading text-primary">Servidor do Ano</h1>
-          <p className="mx-auto max-w-xl text-base text-muted-foreground">
-            Reconhecendo quem faz a diferença todos os dias. Uma votação{' '}
-            <span className="font-medium text-foreground">anônima, segura e fiscalizada</span>.
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
-          <span className="inline-flex items-center gap-2">
-            <ShieldCheck className="h-4 w-4 text-secondary" />
-            Voto anônimo
-          </span>
-          <span className="inline-flex items-center gap-2">
-            <Award className="h-4 w-4 text-secondary" />
-            Reconhecimento institucional
-          </span>
-        </div>
+      {/* Hero compacto — o protagonismo é do card da votação */}
+      <section className="flex flex-col items-center gap-3 pb-2 text-center">
+        <BrandLogo variant="stacked" priority className="h-16 sm:h-20" />
+        <p className="max-w-xl text-sm text-muted-foreground">
+          Uma votação{' '}
+          <span className="font-medium text-foreground">anônima, segura e fiscalizada</span>.
+        </p>
       </section>
 
       {loading && <p className="text-center text-muted-foreground">Carregando votações...</p>}
@@ -83,7 +71,9 @@ export default function HomePage() {
       {!loading && edicoes.length > 0 && (
         <div className="space-y-4">
           <h2 className="text-center font-heading text-2xl text-primary">Votações disponíveis</h2>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div
+            className={`grid gap-6 ${edicoes.length === 1 ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}
+          >
             {edicoes.map(e => {
               const status = STATUS_LABEL[e.statusVotacao];
               const vigencia = formatarVigencia(e.vigencia);
@@ -91,19 +81,25 @@ export default function HomePage() {
                 <Link
                   key={e.id}
                   href={`/${e.slug}/login`}
-                  className="group flex flex-col gap-3 rounded-lg border border-border bg-card p-6 shadow-sm transition hover:border-secondary hover:shadow-md"
+                  className={`group flex flex-col gap-4 rounded-xl border-2 border-secondary/40 bg-gradient-to-b from-card to-secondary/[0.06] p-7 shadow-md transition hover:border-secondary hover:shadow-lg ${
+                    edicoes.length === 1 ? 'sm:p-9' : ''
+                  }`}
                 >
-                  <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="text-lg font-semibold text-primary">{e.nomePrefeitura}</p>
-                      {e.cidade && <p className="text-sm text-muted-foreground">{e.cidade}</p>}
+                      <p
+                        className={`font-heading text-primary ${edicoes.length === 1 ? 'text-2xl sm:text-3xl' : 'text-xl'}`}
+                      >
+                        {e.nomePrefeitura}
+                      </p>
+                      {e.cidade && <p className="mt-1 text-sm text-muted-foreground">{e.cidade}</p>}
                     </div>
                     <Badge variant={status.variant} className="shrink-0">
                       {status.texto}
                     </Badge>
                   </div>
 
-                  <p className="text-sm font-medium text-foreground">Servidor do Ano {e.ano}</p>
+                  <p className="text-base font-semibold text-foreground">Servidor do Ano {e.ano}</p>
 
                   {e.descricao && <p className="text-sm text-muted-foreground">{e.descricao}</p>}
 
@@ -111,13 +107,47 @@ export default function HomePage() {
                     <p className="text-xs text-muted-foreground">Período de votação: {vigencia}</p>
                   )}
 
-                  <span className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-secondary">
+                  <span className="mt-auto inline-flex items-center justify-center gap-2 rounded-md bg-secondary px-5 py-2.5 text-sm font-semibold text-secondary-foreground transition group-hover:opacity-90">
                     Entrar para votar
                     <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                   </span>
                 </Link>
               );
             })}
+          </div>
+
+          {/* Patrocinadores */}
+          <div className="rounded-lg border border-border bg-card/60 px-6 py-6 text-center">
+            <p className="mb-4 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              <Handshake className="h-3.5 w-3.5 text-secondary" />
+              Patrocinadores
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-5">
+              <Image
+                src="/patrocinadores/assercam.png"
+                alt="Assercam"
+                width={621}
+                height={198}
+                sizes="(max-width: 640px) 45vw, 180px"
+                className="h-auto w-[180px] max-w-[45vw] object-contain"
+              />
+              <Image
+                src="/patrocinadores/santander.jpg"
+                alt="Santander"
+                width={1500}
+                height={786}
+                sizes="(max-width: 640px) 45vw, 180px"
+                className="h-auto w-[180px] max-w-[45vw] rounded-md object-contain"
+              />
+              <Image
+                src="/patrocinadores/sindiscam.png"
+                alt="Sindiscam"
+                width={290}
+                height={75}
+                sizes="(max-width: 640px) 45vw, 160px"
+                className="h-auto w-[160px] max-w-[45vw] object-contain"
+              />
+            </div>
           </div>
         </div>
       )}
