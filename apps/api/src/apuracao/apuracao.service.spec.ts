@@ -18,6 +18,7 @@ describe('ApuracaoService', () => {
             setor: { findMany: jest.fn() },
             candidato: { findMany: jest.fn() },
             voto: { count: jest.fn() },
+            edicao: { findUnique: jest.fn() },
           },
         },
       ],
@@ -129,5 +130,59 @@ describe('ApuracaoService', () => {
 
     expect(resultado.setores[0].empate).toBe(false);
     expect(resultado.setores[0].empatados).toHaveLength(0);
+  });
+
+  describe('exportarExcel', () => {
+    it('gera buffer de planilha excel com os dados da apuração', async () => {
+      (prisma.janelaVotacao.findUnique as jest.Mock).mockResolvedValue({
+        dataInicio: new Date('2020-01-01'),
+        dataFim: new Date('2020-01-02'),
+        abertaManual: false,
+        fechadaManual: true,
+      });
+      (prisma.edicao.findUnique as jest.Mock).mockResolvedValue({
+        id: 1,
+        ano: 2026,
+        nomePrefeitura: 'Prefeitura Municipal',
+      });
+      (prisma.setor.findMany as jest.Mock).mockResolvedValue([
+        { id: 1, nomeExibido: 'Gabinete' },
+        { id: 2, nomeExibido: 'Saúde' },
+      ]);
+      (prisma.candidato.findMany as jest.Mock)
+        .mockResolvedValueOnce([
+          { id: 10, nome: 'Ana', cargo: 'Assessora' },
+          { id: 11, nome: 'Bruno', cargo: 'Diretor' },
+        ])
+        .mockResolvedValueOnce([
+          { id: 20, nome: 'Carlos', cargo: 'Médico' },
+          { id: 21, nome: 'Daniela', cargo: 'Enfermeira' },
+        ]);
+      (prisma.voto.count as jest.Mock)
+        .mockResolvedValueOnce(15) // Ana (Eleita)
+        .mockResolvedValueOnce(10) // Bruno
+        .mockResolvedValueOnce(8)  // Carlos (Empate)
+        .mockResolvedValueOnce(8); // Daniela (Empate)
+
+      const buffer = await service.exportarExcel(1);
+
+      expect(buffer).toBeInstanceOf(Buffer);
+      expect(buffer.length).toBeGreaterThan(0);
+      // Assinatura de arquivo ZIP / XLSX (PK..)
+      expect(buffer[0]).toBe(0x50);
+      expect(buffer[1]).toBe(0x4b);
+    });
+
+    it('rejeita exportarExcel se votação ainda estiver aberta', async () => {
+      const agora = new Date();
+      (prisma.janelaVotacao.findUnique as jest.Mock).mockResolvedValue({
+        dataInicio: new Date(agora.getTime() - 60000),
+        dataFim: new Date(agora.getTime() + 60000),
+        abertaManual: false,
+        fechadaManual: false,
+      });
+
+      await expect(service.exportarExcel(1)).rejects.toThrow('fechamento');
+    });
   });
 });

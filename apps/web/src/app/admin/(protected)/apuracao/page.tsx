@@ -1,12 +1,14 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { Trophy } from 'lucide-react';
+import { Trophy, FileSpreadsheet, Loader2 } from 'lucide-react';
 import { Alert } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { AdminSkeleton } from '@/components/admin/admin-skeleton';
 import { api, type ApiError } from '@/lib/api';
+import { downloadApuracaoExcel } from '@/lib/download';
 import { useEdicao } from '@/lib/edicao-context';
 import type { ResultadoApuracao, ResultadoSetor } from '@/lib/types';
 
@@ -15,6 +17,7 @@ export default function ApuracaoPage() {
   const [resultado, setResultado] = useState<ResultadoApuracao | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [exportando, setExportando] = useState(false);
 
   const carregar = useCallback(async () => {
     if (!edicaoId) return;
@@ -34,12 +37,48 @@ export default function ApuracaoPage() {
     carregar();
   }, [carregar]);
 
+  const handleExportarExcel = async () => {
+    if (!edicaoId) return;
+    setExportando(true);
+    try {
+      await downloadApuracaoExcel(edicaoId);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Falha ao exportar Excel');
+    } finally {
+      setExportando(false);
+    }
+  };
+
   if (loading) {
     return <AdminSkeleton variant="cards" />;
   }
 
   return (
     <div className="space-y-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="font-heading text-2xl text-primary">Apuração dos Votos</h1>
+          <p className="text-sm text-muted-foreground">
+            Resultado oficial e ranking dos candidatos por setor após fechamento da votação.
+          </p>
+        </div>
+        {resultado && resultado.votacaoFechada && (
+          <Button
+            variant="outline"
+            onClick={handleExportarExcel}
+            disabled={exportando}
+            className="flex items-center gap-2 self-start sm:self-auto"
+          >
+            {exportando ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <FileSpreadsheet className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+            )}
+            <span>{exportando ? 'Exportando...' : 'Exportar Excel (.xlsx)'}</span>
+          </Button>
+        )}
+      </div>
+
       {erro && <Alert variant="error">{erro}</Alert>}
 
       {resultado && !resultado.votacaoFechada && (
