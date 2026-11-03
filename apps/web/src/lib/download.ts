@@ -31,3 +31,29 @@ export async function downloadComprovante(eleitorId: number): Promise<void> {
     throw new Error(error instanceof Error ? error.message : 'Erro ao baixar comprovante');
   }
 }
+
+/**
+ * Baixa a planilha Excel com o resultado consolidado da apuração.
+ * GET /admin/apuracao/:edicaoId/excel (exige token de admin).
+ */
+export async function downloadApuracaoExcel(edicaoId: number): Promise<void> {
+  try {
+    const response = await api.get(`/admin/apuracao/${edicaoId}/excel`, {
+      responseType: 'blob',
+    });
+
+    const blob = response.data as Blob;
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `apuracao-edicao-${edicaoId}.xlsx`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    URL.revokeObjectURL(url);
+  } catch (error) {
+    throw new Error(error instanceof Error ? error.message : 'Erro ao exportar apuração em Excel');
+  }
+}
